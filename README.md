@@ -74,6 +74,7 @@ npm run prompt -- rulesets/fiction/creatures.yaml # the prompt a model is given
 npm run import-proofwriter -- CWA/depth-5/meta-test.jsonl out/   # convert ProofWriter theories
 npm run bench -- --runs 3 -- claude -p --model haiku
 npm run bench-extract -- --jobs 4 CWA/depth-5/meta-test.jsonl -- claude -p --model haiku
+npm run draft -- --source article.txt --id food-danger-zone --subject practical --cite "..." -- claude -p --model sonnet
 ```
 
 `bench` sends each rule set's prompt to any command on its standard input and reads a JSON answer
@@ -85,6 +86,12 @@ relations), one point each.
 and names, writes the facts and rules itself, and is scored by how the engine then answers the
 theory's questions. It measures how well a model could draft rule sets. Results are in
 [docs/benchmarks.md](docs/benchmarks.md).
+
+`draft` asks a model for a whole rule set from a source text. The draft must load, fit the catalog,
+agree with its own cases, cover every rule with a case, and quote the source word for word in every
+rule's `source`; whatever fails goes back to the model, for up to three rounds. An accepted draft is
+written to `rulesets/<subject>/` with `method: llm_drafted`, for a person to review against the quotes
+before it is merged: the checks catch broken drafts, not incomplete or unscoped ones.
 
 ## Contributing a rule set
 

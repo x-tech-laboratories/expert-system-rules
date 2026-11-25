@@ -6,10 +6,11 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { explain, infer, query, type Answer } from "./engine.ts";
-import { extraction_prompt, score_extraction, type ExtractionScore, type ExtractionTask } from "./extract.ts";
+import { check_draft, draft_prompt, type DraftRequest } from "./draft.ts";
+import { extraction_prompt, score_extraction, yaml_of, type ExtractionScore, type ExtractionTask } from "./extract.ts";
 import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
-import { catalog_problems, find_catalog, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
+import { catalog_problems, find_catalog, parse_vocabulary, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
 import { ask_model, check_cases, is_correct, score, type CaseResult, type ProgramRunner } from "./runner.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
@@ -38,6 +39,9 @@ const usage = `Usage:
   expert-system-rules bench-extract [--every N] [--jobs N] <meta-file.jsonl> -- <command ...>
                                                      give a command every Nth ProofWriter theory's English (default 20), and score
                                                      the facts and rules it writes by the engine's answers to the theory's questions
+  expert-system-rules draft --source <text-file> --id <id> --subject <folder> --cite <credit> [--license <spdx>] [--rounds N] -- <command ...>
+                                                     ask a command to draft a rule set from a text, send it back with every problem the
+                                                     checks find (up to N rounds, default 3), and write it to rulesets/<folder>/<id>.yaml
   expert-system-rules import-proofwriter <meta-file.jsonl> <out-folder> [--every N]
                                                      convert ProofWriter's closed-world theories, check each against the engine,
                                                      and write every Nth one (default 20) as a rule set
@@ -214,6 +218,64 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
   return 0;
 }
 
+// Takes "--name value" out of the arguments.
+function take_value(args: string[], name: string): { value: string; rest: string[] } {
+  const at = args.indexOf(name);
+  if (at < 0 || at + 1 >= args.length) return { value: "", rest: args };
+  return { value: args[at + 1], rest: args.filter((_, index) => index !== at && index !== at + 1) };
+}
+
+async function draft(context: CliContext, args: string[]): Promise<number> {
+  const split = args.indexOf("--");
+  const command = split < 0 ? [] : args.slice(split + 1);
+  let options = split < 0 ? args : args.slice(0, split);
+  const read = (name: string): string => {
+    const taken = take_value(options, name);
+    options = taken.rest;
+    return taken.value;
+  };
+  const [source, id, subject, cite, license] = ["--source", "--id", "--subject", "--cite", "--license"].map(read);
+  const rounds = take_count(options, "--rounds", 3);
+  if (!command.length || !source || !id || !subject || !cite || rounds.value === null || rounds.rest.length) {
+    line(context.err, "draft needs --source, --id, --subject and --cite, and a command after --; --rounds takes a whole number of 1 or more");
+    return 2;
+  }
+
+  const path = resolve(context.cwd, "rulesets", subject, `${id}.yaml`);
+  const catalog = await find_catalog(path);
+  if (!catalog) {
+    line(context.err, `no catalog.yaml above ${path}; run draft from the repository`);
+    return 2;
+  }
+  if (!catalog.subjects.has(subject)) {
+    line(context.err, `the subject "${subject}" is not listed in catalog.yaml; add it there first`);
+    return 2;
+  }
+  const core_file = join(catalog.root, "vocabularies", "core.yaml");
+  const core = parse_vocabulary(await readFile(core_file, "utf8"), core_file);
+  const request: DraftRequest = { source_text: await readFile(resolve(context.cwd, source), "utf8"), id, subject, license: license || "CC-BY-SA-4.0", cite };
+
+  let previous: { yaml: string; problems: string[] } | undefined;
+  for (let round = 1; round <= rounds.value; round++) {
+    const yaml = yaml_of(await ask_model(command, draft_prompt(request, catalog, core, previous), context.run)).trim() + "\n";
+    const checked = await check_draft(yaml, path, request, catalog);
+    if (checked.rule_set) {
+      await mkdir(resolve(context.cwd, "rulesets", subject), { recursive: true });
+      await writeFile(path, yaml);
+      line(context.out, `round ${round}: accepted, ${checked.rule_set.rules.length} rules and ${checked.rule_set.cases.length} cases, written to ${path}`);
+      line(context.out, "Review every rule against its quote before opening a pull request.");
+      return 0;
+    }
+    line(context.out, `round ${round}: ${checked.problems.length} problems`);
+    for (const problem of checked.problems) line(context.out, `  ${problem}`);
+    previous = { yaml, problems: checked.problems };
+  }
+  const rejected = resolve(context.cwd, `${id}.rejected.yaml`);
+  await writeFile(rejected, [...previous!.problems.map(problem => `# ${problem}`), previous!.yaml].join("\n"));
+  line(context.out, `not accepted after ${rounds.value} rounds; the last draft and its problems are in ${rejected}`);
+  return 1;
+}
+
 async function import_proofwriter(context: CliContext, args: string[]): Promise<number> {
   let every = 20;
   const every_at = args.indexOf("--every");
@@ -294,6 +356,8 @@ export async function run_cli(args: string[], context: CliContext): Promise<numb
         return await bench(context, rest);
       case "bench-extract":
         return await bench_extract(context, rest);
+      case "draft":
+        return await draft(context, rest);
       case "import-proofwriter":
         return await import_proofwriter(context, rest);
       case undefined:

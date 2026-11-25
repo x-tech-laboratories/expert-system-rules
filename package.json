@@ -20,6 +20,7 @@
     "prompt": "node src/cli.ts prompt",
     "bench": "node src/cli.ts bench",
     "bench-extract": "node src/cli.ts bench-extract",
+    "draft": "node src/cli.ts draft",
     "import-proofwriter": "node src/cli.ts import-proofwriter"
   },
   "dependencies": {
