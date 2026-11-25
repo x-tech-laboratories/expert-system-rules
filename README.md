@@ -14,6 +14,11 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | --- | --- | --- | --- | --- |
 | [Animal identification](rulesets/animals/animal-identification.yaml) | animals | 15 | 11 | classification, adapted from a textbook example |
 | [Kitchen common sense](rulesets/commonsense/kitchen.yaml) | commonsense | 8 | 5 | kinds of food, where things are, what spoils |
+| [Everyday physics](rulesets/commonsense/physics.yaml) | commonsense | 13 | 8 | support and falling, breaking, floating, melting, heat, fire |
+| [People, needs and manners](rulesets/commonsense/people.yaml) | commonsense | 11 | 7 | needs, wants, feelings, thanks, loans, safety |
+| [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 7 | 5 | size classes, bigger and heavier, what fits, comparable units |
+| [Everyday routines](rulesets/commonsense/routines.yaml) | commonsense | 5 | 7 | restaurant, fast food, doctor and train scripts |
+| [Time and order](rulesets/commonsense/time.yaml) | commonsense | 11 | 7 | days of the week, past and future, during, ages, impossible timelines |
 | [Creature licensing](rulesets/fiction/creatures.yaml) | fiction | 17 | 11 | fictional licensing, built to catch real-world priors |
 | [Car won't start](rulesets/vehicles/car-wont-start.yaml) | vehicles | 16 | 9 | diagnosis |
 

@@ -1,0 +1,74 @@
+id: routines
+title: Everyday routines
+description: >
+  Scripts for common outings: the steps of eating at a restaurant, buying fast food, seeing a doctor
+  and catching a train, in their usual order. From the step someone has reached, the rules tell what
+  they have already done (unless they skipped it) and what comes next.
+license: CC-BY-SA-4.0
+tags: [commonsense, scripts, routines, transitivity, negation, trap-cases, original]
+source: >
+  Original to this repository, in the spirit of the restaurant script of Schank and Abelson,
+  "Scripts, Plans, Goals and Understanding" (1977).
+
+relations:
+  next_step: In its routine, the object step comes straight after the subject step.
+  step_before: In its routine, the subject step comes somewhere before the object step.
+  reached: The subject visit has got as far as this step.
+  skipped: The subject visit left out this step.
+  done: The subject visit has completed this step.
+  expects: The subject visit's next step is this.
+  is: The subject has this property.
+
+rules:
+  - { id: S1, if: [?a next_step ?b], then: ?a step_before ?b }
+  - { id: S2, if: [?a step_before ?b, ?b step_before ?c], then: ?a step_before ?c }
+  - { id: S3, if: [?v reached ?s, ?e step_before ?s, not ?v skipped ?e], then: ?v done ?e }
+  - { id: S4, if: [?v reached ?s, ?s next_step ?t], then: ?v expects ?t }
+  - { id: S5, if: [?v reached leave_restaurant, not ?v done pay_bill], then: ?v is unpaid }
+
+facts:
+  - be_seated next_step order_meal
+  - order_meal next_step eat_meal
+  - eat_meal next_step pay_bill
+  - pay_bill next_step leave_restaurant
+  - order_at_counter next_step pay_at_counter
+  - pay_at_counter next_step eat_takeaway
+  - check_in next_step wait_room
+  - wait_room next_step see_doctor
+  - see_doctor next_step get_prescription
+  - buy_ticket next_step board_train
+  - board_train next_step ride_train
+  - ride_train next_step leave_train
+
+cases:
+  - id: dinner_out
+    facts: [dinner reached eat_meal]
+    expect: [dinner done be_seated, dinner done order_meal, dinner expects pay_bill]
+    expect_not: [dinner done pay_bill, dinner done eat_meal]
+  - id: fast_food
+    note: Trap. At the counter you pay before you eat, the opposite of the restaurant.
+    facts: [snack reached eat_takeaway]
+    expect: [snack done pay_at_counter, snack done order_at_counter]
+    expect_not: [snack expects pay_bill, snack expects pay_at_counter]
+  - id: doctor
+    facts: [visit reached see_doctor]
+    expect: [visit done check_in, visit done wait_room, visit expects get_prescription]
+    expect_not: [visit done get_prescription]
+  - id: walked_in
+    note: The patient skipped the waiting room, so it is not done even though a later step was reached.
+    facts: [urgent reached see_doctor, urgent skipped wait_room]
+    expect: [urgent done check_in]
+    expect_not: [urgent done wait_room]
+  - id: dine_and_dash
+    note: Trap. Leaving after skipping the bill marks the visit unpaid.
+    facts: [meal reached leave_restaurant, meal skipped pay_bill]
+    expect: [meal done eat_meal, meal is unpaid]
+    expect_not: [meal done pay_bill]
+  - id: paid_meal
+    facts: [lunch reached leave_restaurant]
+    expect: [lunch done pay_bill]
+    expect_not: [lunch is unpaid]
+  - id: train
+    facts: [journey reached ride_train]
+    expect: [journey done buy_ticket, journey expects leave_train, buy_ticket step_before leave_train]
+    expect_not: [journey done leave_train, leave_train step_before buy_ticket]
