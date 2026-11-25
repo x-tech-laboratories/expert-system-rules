@@ -1,0 +1,40 @@
+id: attnoneg-cwa-d5-439
+title: ProofWriter AttNoneg-CWA-D5-439
+description: "Anne is furry. Anne is rough. Anne is white. Bob is nice. Bob is rough. Bob is white. Dave is rough. Dave is white. Fiona is furry. Fiona is quiet. All quiet, red people are furry. If Dave is green and Dave is nice then Dave is red. If Fiona is white and Fiona is green then Fiona is quiet. All nice people are furry. If someone is furry then they are green. If someone is furry and quiet then they are nice. If someone is green then they are quiet. All rough people are furry."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-439, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is quiet, ?x is red], then: ?x is furry }
+  - { id: R2, if: [dave is green, dave is nice], then: dave is red }
+  - { id: R3, if: [fiona is white, fiona is green], then: fiona is quiet }
+  - { id: R4, if: [?x is nice], then: ?x is furry }
+  - { id: R5, if: [?x is furry], then: ?x is green }
+  - { id: R6, if: [?x is furry, ?x is quiet], then: ?x is nice }
+  - { id: R7, if: [?x is green], then: ?x is quiet }
+  - { id: R8, if: [?x is rough], then: ?x is furry }
+
+facts:
+  - anne is furry
+  - anne is rough
+  - anne is white
+  - bob is nice
+  - bob is rough
+  - bob is white
+  - dave is rough
+  - dave is white
+  - fiona is furry
+  - fiona is quiet
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is nice, dave is white, anne is green, anne is quiet, dave is green, anne is nice, bob is quiet, dave is nice, dave is red]
+    expect_not: [bob is red, fiona is rough, fiona is white, fiona is red]

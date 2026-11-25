@@ -1,0 +1,40 @@
+id: attnoneg-cwa-d5-376
+title: ProofWriter AttNoneg-CWA-D5-376
+description: "Bob is blue. Bob is kind. Bob is nice. Bob is rough. Erin is green. Erin is nice. Fiona is cold. Fiona is furry. Harry is furry. Harry is rough. Nice, cold people are rough. All furry people are blue. If someone is kind and nice then they are furry. If someone is blue and green then they are kind. Nice people are cold. All rough, green people are furry. If Harry is furry and Harry is cold then Harry is blue. Kind people are cold."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-376, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is nice, ?x is cold], then: ?x is rough }
+  - { id: R2, if: [?x is furry], then: ?x is blue }
+  - { id: R3, if: [?x is kind, ?x is nice], then: ?x is furry }
+  - { id: R4, if: [?x is blue, ?x is green], then: ?x is kind }
+  - { id: R5, if: [?x is nice], then: ?x is cold }
+  - { id: R6, if: [?x is rough, ?x is green], then: ?x is furry }
+  - { id: R7, if: [harry is furry, harry is cold], then: harry is blue }
+  - { id: R8, if: [?x is kind], then: ?x is cold }
+
+facts:
+  - bob is blue
+  - bob is kind
+  - bob is nice
+  - bob is rough
+  - erin is green
+  - erin is nice
+  - fiona is cold
+  - fiona is furry
+  - harry is furry
+  - harry is rough
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [harry is furry, bob is rough, bob is cold, harry is blue, erin is rough, erin is furry, erin is blue, erin is kind]
+    expect_not: [fiona is kind, harry is kind, harry is cold, fiona is rough, harry is green, bob is green, harry is nice, fiona is green]

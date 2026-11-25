@@ -1,0 +1,46 @@
+id: relnoneg-cwa-d5-826
+title: ProofWriter RelNoneg-CWA-D5-826
+description: "The dog eats the tiger. The dog is blue. The dog visits the lion. The lion eats the mouse. The lion is rough. The lion is round. The lion visits the tiger. The mouse eats the tiger. The tiger eats the lion. The tiger needs the mouse. The tiger visits the dog. The tiger visits the lion. If someone visits the mouse then they visit the lion. If someone needs the lion then they visit the mouse. If someone visits the tiger then the tiger eats the mouse. If someone eats the mouse and they are blue then they visit the tiger. If someone eats the mouse and the mouse is round then they eat the lion. If someone visits the tiger and the tiger visits the mouse then they visit the dog. If someone is round and they need the lion then the lion is red. If someone visits the lion then the lion visits the mouse. If someone visits the dog then they need the lion."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-826, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  eats: The subject eats the object.
+  is: The subject has this property.
+  needs: The subject needs the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x visits mouse], then: ?x visits lion }
+  - { id: R2, if: [?x needs lion], then: ?x visits mouse }
+  - { id: R3, if: [?x visits tiger], then: tiger eats mouse }
+  - { id: R4, if: [?x eats mouse, ?x is blue], then: ?x visits tiger }
+  - { id: R5, if: [?x eats mouse, mouse is round], then: ?x eats lion }
+  - { id: R6, if: [?x visits tiger, tiger visits mouse], then: ?x visits dog }
+  - { id: R7, if: [?x is round, ?x needs lion], then: lion is red }
+  - { id: R8, if: [?x visits lion], then: lion visits mouse }
+  - { id: R9, if: [?x visits dog], then: ?x needs lion }
+
+facts:
+  - dog eats tiger
+  - dog is blue
+  - dog visits lion
+  - lion eats mouse
+  - lion is rough
+  - lion is round
+  - lion visits tiger
+  - mouse eats tiger
+  - tiger eats lion
+  - tiger needs mouse
+  - tiger visits dog
+  - tiger visits lion
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [dog eats tiger, tiger eats mouse, tiger needs lion, tiger visits mouse, lion visits dog, lion needs lion, lion is red]
+    expect_not: [mouse needs lion, mouse visits lion, dog needs lion, dog visits tiger, mouse visits mouse, dog eats lion, dog is rough, mouse eats mouse, dog is red, dog needs dog, lion needs tiger, tiger is blue]

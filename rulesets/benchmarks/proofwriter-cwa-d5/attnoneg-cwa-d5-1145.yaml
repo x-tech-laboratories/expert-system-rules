@@ -1,0 +1,45 @@
+id: attnoneg-cwa-d5-1145
+title: ProofWriter AttNoneg-CWA-D5-1145
+description: "Anne is big. Anne is blue. Anne is cold. Anne is furry. Anne is red. Anne is round. Anne is smart. Bob is cold. Bob is smart. Dave is furry. Erin is blue. Erin is cold. Erin is round. Erin is smart. If someone is smart and red then they are blue. If someone is cold and big then they are red. If Dave is smart and Dave is red then Dave is big. If Bob is round and Bob is furry then Bob is big. All round people are furry. All big people are red. Smart people are round. All big people are round. Furry people are big."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-1145, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is smart, ?x is red], then: ?x is blue }
+  - { id: R2, if: [?x is cold, ?x is big], then: ?x is red }
+  - { id: R3, if: [dave is smart, dave is red], then: dave is big }
+  - { id: R4, if: [bob is round, bob is furry], then: bob is big }
+  - { id: R5, if: [?x is round], then: ?x is furry }
+  - { id: R6, if: [?x is big], then: ?x is red }
+  - { id: R7, if: [?x is smart], then: ?x is round }
+  - { id: R8, if: [?x is big], then: ?x is round }
+  - { id: R9, if: [?x is furry], then: ?x is big }
+
+facts:
+  - anne is big
+  - anne is blue
+  - anne is cold
+  - anne is furry
+  - anne is red
+  - anne is round
+  - anne is smart
+  - bob is cold
+  - bob is smart
+  - dave is furry
+  - erin is blue
+  - erin is cold
+  - erin is round
+  - erin is smart
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [anne is round, bob is cold, bob is round, dave is big, dave is round, dave is red, erin is red, bob is red, bob is blue]
+    expect_not: [dave is blue, dave is smart]

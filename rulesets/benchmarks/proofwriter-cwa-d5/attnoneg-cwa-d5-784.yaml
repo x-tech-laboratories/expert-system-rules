@@ -1,0 +1,37 @@
+id: attnoneg-cwa-d5-784
+title: ProofWriter AttNoneg-CWA-D5-784
+description: "Bob is rough. Bob is round. Bob is smart. Charlie is furry. Fiona is furry. Fiona is quiet. Gary is rough. If Charlie is quiet then Charlie is green. Green, young people are round. If someone is young then they are quiet. All round, green people are smart. If Charlie is furry then Charlie is young. Rough, furry people are green. If someone is quiet and furry then they are rough. If someone is round and young then they are quiet."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-784, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [charlie is quiet], then: charlie is green }
+  - { id: R2, if: [?x is green, ?x is young], then: ?x is round }
+  - { id: R3, if: [?x is young], then: ?x is quiet }
+  - { id: R4, if: [?x is round, ?x is green], then: ?x is smart }
+  - { id: R5, if: [charlie is furry], then: charlie is young }
+  - { id: R6, if: [?x is rough, ?x is furry], then: ?x is green }
+  - { id: R7, if: [?x is quiet, ?x is furry], then: ?x is rough }
+  - { id: R8, if: [?x is round, ?x is young], then: ?x is quiet }
+
+facts:
+  - bob is rough
+  - bob is round
+  - bob is smart
+  - charlie is furry
+  - fiona is furry
+  - fiona is quiet
+  - gary is rough
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is rough, fiona is quiet, fiona is rough, fiona is green, charlie is quiet, charlie is green, charlie is rough, charlie is round, charlie is smart]
+    expect_not: [bob is green, gary is green, gary is smart, gary is round, gary is quiet, fiona is smart, bob is young, fiona is young, gary is furry, bob is furry]

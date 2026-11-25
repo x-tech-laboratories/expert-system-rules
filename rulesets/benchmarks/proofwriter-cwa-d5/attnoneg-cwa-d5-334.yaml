@@ -1,0 +1,43 @@
+id: attnoneg-cwa-d5-334
+title: ProofWriter AttNoneg-CWA-D5-334
+description: "Anne is big. Dave is big. Dave is blue. Dave is green. Dave is round. Dave is smart. Gary is round. Gary is smart. Harry is big. Harry is cold. Harry is green. Harry is red. All red, cold people are green. Cold people are blue. All big, cold people are smart. Smart people are big. All big people are green. All big people are smart. If someone is blue then they are red. If Gary is green and Gary is smart then Gary is cold. Cold, red people are big."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-334, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is red, ?x is cold], then: ?x is green }
+  - { id: R2, if: [?x is cold], then: ?x is blue }
+  - { id: R3, if: [?x is big, ?x is cold], then: ?x is smart }
+  - { id: R4, if: [?x is smart], then: ?x is big }
+  - { id: R5, if: [?x is big], then: ?x is green }
+  - { id: R6, if: [?x is big], then: ?x is smart }
+  - { id: R7, if: [?x is blue], then: ?x is red }
+  - { id: R8, if: [gary is green, gary is smart], then: gary is cold }
+  - { id: R9, if: [?x is cold, ?x is red], then: ?x is big }
+
+facts:
+  - anne is big
+  - dave is big
+  - dave is blue
+  - dave is green
+  - dave is round
+  - dave is smart
+  - gary is round
+  - gary is smart
+  - harry is big
+  - harry is cold
+  - harry is green
+  - harry is red
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [gary is smart, harry is green, anne is green, gary is green, gary is cold, gary is blue, gary is red]
+    expect_not: [anne is red, anne is blue, anne is round, harry is round, dave is cold, anne is cold]

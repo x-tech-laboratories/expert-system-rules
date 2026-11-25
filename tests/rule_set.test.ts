@@ -168,6 +168,15 @@ describe("stratify", () => {
     expect(stratify(rules, [triple("seed is a")])).toEqual(new Map([["1", 0], ["2", 0], ["3", 1]]));
   });
 
+  it("separates kinds by their fixed subject too", () => {
+    const rules = [
+      { id: "1", conditions: [{ ...triple("rabbit is a"), negated: false }], conclusion: triple("rabbit is b") },
+      { id: "2", conditions: [{ ...triple("rabbit is b"), negated: false }, { ...triple("cat is b"), negated: true }], conclusion: triple("rabbit is a") },
+    ];
+
+    expect(stratify(rules, [])).toEqual(new Map([["1", 1], ["2", 1]]));
+  });
+
   it("treats a variable object as every object of that relation", () => {
     const rules = [{ id: "1", conditions: [{ ...triple("?x is a"), negated: false }, { ...triple("?x is ?y"), negated: true }], conclusion: triple("?x is b") }];
 

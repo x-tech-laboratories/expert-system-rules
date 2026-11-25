@@ -1,0 +1,45 @@
+id: attneg-cwa-d5-925
+title: ProofWriter AttNeg-CWA-D5-925
+description: "Bob is cold. Bob is round. Bob is smart. Bob is white. Dave is cold. Dave is round. Erin is cold. Erin is round. Erin is smart. Erin is young. Gary is cold. Gary is furry. Gary is smart. Gary is young. If something is round and smart then it is young. Furry things are white. Young things are rough. If something is white then it is furry. If something is white and rough then it is furry. All young things are furry. If something is round then it is furry. If something is smart and rough then it is cold. If something is white then it is smart."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-925, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is round, ?x is smart], then: ?x is young }
+  - { id: R2, if: [?x is furry], then: ?x is white }
+  - { id: R3, if: [?x is young], then: ?x is rough }
+  - { id: R4, if: [?x is white], then: ?x is furry }
+  - { id: R5, if: [?x is white, ?x is rough], then: ?x is furry }
+  - { id: R6, if: [?x is young], then: ?x is furry }
+  - { id: R7, if: [?x is round], then: ?x is furry }
+  - { id: R8, if: [?x is smart, ?x is rough], then: ?x is cold }
+  - { id: R9, if: [?x is white], then: ?x is smart }
+
+facts:
+  - bob is cold
+  - bob is round
+  - bob is smart
+  - bob is white
+  - dave is cold
+  - dave is round
+  - erin is cold
+  - erin is round
+  - erin is smart
+  - erin is young
+  - gary is cold
+  - gary is furry
+  - gary is smart
+  - gary is young
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [dave is round, gary is cold, erin is rough, gary is white, erin is white, bob is rough, dave is smart, dave is young, dave is rough]
+    expect_not: []

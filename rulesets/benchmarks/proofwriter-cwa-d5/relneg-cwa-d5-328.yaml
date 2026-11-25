@@ -1,0 +1,46 @@
+id: relneg-cwa-d5-328
+title: ProofWriter RelNeg-CWA-D5-328
+description: "The bald eagle chases the dog. The bald eagle is kind. The bald eagle likes the cat. The bald eagle likes the lion. The bald eagle needs the lion. The cat is green. The cat needs the dog. The dog chases the lion. The lion is green. The lion is red. The lion is round. The lion needs the dog. If something likes the cat and the cat likes the bald eagle then it likes the bald eagle. If something likes the dog then the dog is round. If something is kind and it needs the dog then the dog is rough. If something chases the cat and it chases the lion then it is red. If something chases the bald eagle then the bald eagle likes the dog. If something is rough and it likes the lion then the lion is rough. If something likes the cat and it chases the dog then it chases the cat. If the dog is round then the dog needs the lion. If something is kind and it chases the cat then the cat chases the bald eagle."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-328, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  needs: The subject needs the object.
+
+rules:
+  - { id: R1, if: [?x likes cat, cat likes bald_eagle], then: ?x likes bald_eagle }
+  - { id: R2, if: [?x likes dog], then: dog is round }
+  - { id: R3, if: [?x is kind, ?x needs dog], then: dog is rough }
+  - { id: R4, if: [?x chases cat, ?x chases lion], then: ?x is red }
+  - { id: R5, if: [?x chases bald_eagle], then: bald_eagle likes dog }
+  - { id: R6, if: [?x is rough, ?x likes lion], then: lion is rough }
+  - { id: R7, if: [?x likes cat, ?x chases dog], then: ?x chases cat }
+  - { id: R8, if: [dog is round], then: dog needs lion }
+  - { id: R9, if: [?x is kind, ?x chases cat], then: cat chases bald_eagle }
+
+facts:
+  - bald_eagle chases dog
+  - bald_eagle is kind
+  - bald_eagle likes cat
+  - bald_eagle likes lion
+  - bald_eagle needs lion
+  - cat is green
+  - cat needs dog
+  - dog chases lion
+  - lion is green
+  - lion is red
+  - lion is round
+  - lion needs dog
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [lion is red, cat needs dog, bald_eagle chases cat, cat chases bald_eagle, bald_eagle likes dog, dog is round, dog needs lion]
+    expect_not: [dog likes bald_eagle, dog chases cat, bald_eagle is red, dog is rough, lion chases cat, cat likes bald_eagle, dog is green, cat likes dog, dog likes cat, bald_eagle is round, lion needs bald_eagle, lion needs lion]

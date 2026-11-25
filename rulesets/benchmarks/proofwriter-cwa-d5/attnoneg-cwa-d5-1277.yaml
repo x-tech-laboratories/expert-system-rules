@@ -1,0 +1,40 @@
+id: attnoneg-cwa-d5-1277
+title: ProofWriter AttNoneg-CWA-D5-1277
+description: "Anne is rough. Bob is blue. Bob is nice. Erin is green. Fiona is big. Fiona is blue. Fiona is furry. Fiona is nice. Fiona is rough. Fiona is smart. Big things are rough. If Erin is nice and Erin is smart then Erin is big. If Anne is rough then Anne is nice. All rough things are big. Furry, big things are blue. Green things are rough. Big things are furry. If something is blue then it is smart."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-1277, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is big], then: ?x is rough }
+  - { id: R2, if: [erin is nice, erin is smart], then: erin is big }
+  - { id: R3, if: [anne is rough], then: anne is nice }
+  - { id: R4, if: [?x is rough], then: ?x is big }
+  - { id: R5, if: [?x is furry, ?x is big], then: ?x is blue }
+  - { id: R6, if: [?x is green], then: ?x is rough }
+  - { id: R7, if: [?x is big], then: ?x is furry }
+  - { id: R8, if: [?x is blue], then: ?x is smart }
+
+facts:
+  - anne is rough
+  - bob is blue
+  - bob is nice
+  - erin is green
+  - fiona is big
+  - fiona is blue
+  - fiona is furry
+  - fiona is nice
+  - fiona is rough
+  - fiona is smart
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is nice, fiona is furry, bob is smart, anne is nice, anne is furry, anne is blue, anne is smart, erin is smart]
+    expect_not: [bob is rough, bob is big, bob is furry, erin is nice, fiona is green, anne is green]

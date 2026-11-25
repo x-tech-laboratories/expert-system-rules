@@ -1,0 +1,44 @@
+id: relnoneg-cwa-d5-987
+title: ProofWriter RelNoneg-CWA-D5-987
+description: "The bald eagle chases the cat. The bald eagle visits the rabbit. The cat is green. The cat is kind. The cat likes the rabbit. The mouse chases the cat. The mouse likes the bald eagle. The mouse likes the cat. The mouse visits the rabbit. The rabbit likes the cat. If someone likes the cat then the cat visits the mouse. If someone visits the mouse and they like the cat then the mouse visits the bald eagle. If someone likes the bald eagle and the bald eagle visits the mouse then the bald eagle chases the mouse. If the bald eagle likes the cat then the bald eagle is cold. If someone visits the bald eagle and they chase the bald eagle then the bald eagle chases the cat. If someone chases the cat then they like the cat. If someone is blue and kind then they like the rabbit. If someone likes the cat and they chase the mouse then they like the bald eagle. If someone is cold then they visit the mouse."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-987, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x likes cat], then: cat visits mouse }
+  - { id: R2, if: [?x visits mouse, ?x likes cat], then: mouse visits bald_eagle }
+  - { id: R3, if: [?x likes bald_eagle, bald_eagle visits mouse], then: bald_eagle chases mouse }
+  - { id: R4, if: [bald_eagle likes cat], then: bald_eagle is cold }
+  - { id: R5, if: [?x visits bald_eagle, ?x chases bald_eagle], then: bald_eagle chases cat }
+  - { id: R6, if: [?x chases cat], then: ?x likes cat }
+  - { id: R7, if: [?x is blue, ?x is kind], then: ?x likes rabbit }
+  - { id: R8, if: [?x likes cat, ?x chases mouse], then: ?x likes bald_eagle }
+  - { id: R9, if: [?x is cold], then: ?x visits mouse }
+
+facts:
+  - bald_eagle chases cat
+  - bald_eagle visits rabbit
+  - cat is green
+  - cat is kind
+  - cat likes rabbit
+  - mouse chases cat
+  - mouse likes bald_eagle
+  - mouse likes cat
+  - mouse visits rabbit
+  - rabbit likes cat
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [mouse visits rabbit, mouse likes cat, cat visits mouse, bald_eagle likes cat, bald_eagle is cold, bald_eagle visits mouse, bald_eagle chases mouse, mouse visits bald_eagle, bald_eagle likes bald_eagle]
+    expect_not: [bald_eagle likes rabbit, rabbit likes bald_eagle, rabbit visits mouse, mouse likes rabbit, rabbit likes rabbit, cat likes bald_eagle, rabbit chases mouse, mouse is green, cat is big, rabbit is big, bald_eagle is green, bald_eagle visits cat]

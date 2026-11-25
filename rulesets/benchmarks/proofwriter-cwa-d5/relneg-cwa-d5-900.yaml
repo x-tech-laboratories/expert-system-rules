@@ -1,0 +1,44 @@
+id: relneg-cwa-d5-900
+title: ProofWriter RelNeg-CWA-D5-900
+description: "The bear chases the rabbit. The bear is blue. The cat is kind. The mouse chases the rabbit. The mouse is nice. The mouse is young. The mouse likes the bear. The rabbit chases the mouse. The rabbit is blue. The rabbit likes the cat. If the rabbit is big then the rabbit likes the bear. If someone likes the mouse and the mouse is young then they are kind. If someone likes the rabbit and they are kind then the rabbit likes the mouse. If the mouse chases the cat then the cat is nice. If someone is nice then they like the mouse. If someone likes the mouse and the mouse does not like the cat then they chase the cat. If someone eats the mouse then they are young. If someone eats the mouse and they are kind then they are big. If someone is blue then they eat the rabbit."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-900, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  eats: The subject eats the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+
+rules:
+  - { id: R1, if: [rabbit is big], then: rabbit likes bear }
+  - { id: R2, if: [?x likes mouse, mouse is young], then: ?x is kind }
+  - { id: R3, if: [?x likes rabbit, ?x is kind], then: rabbit likes mouse }
+  - { id: R4, if: [mouse chases cat], then: cat is nice }
+  - { id: R5, if: [?x is nice], then: ?x likes mouse }
+  - { id: R6, if: [?x likes mouse, not mouse likes cat], then: ?x chases cat }
+  - { id: R7, if: [?x eats mouse], then: ?x is young }
+  - { id: R8, if: [?x eats mouse, ?x is kind], then: ?x is big }
+  - { id: R9, if: [?x is blue], then: ?x eats rabbit }
+
+facts:
+  - bear chases rabbit
+  - bear is blue
+  - cat is kind
+  - mouse chases rabbit
+  - mouse is nice
+  - mouse is young
+  - mouse likes bear
+  - rabbit chases mouse
+  - rabbit is blue
+  - rabbit likes cat
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [cat is kind, rabbit chases mouse, mouse likes mouse, bear eats rabbit, mouse is kind, mouse chases cat, cat is nice, cat likes mouse, cat chases cat]
+    expect_not: [bear likes mouse, cat eats rabbit, rabbit likes bear, mouse is big, rabbit likes mouse, bear is big, mouse is blue, mouse eats bear, bear eats mouse, mouse eats mouse, rabbit eats bear, cat eats cat]

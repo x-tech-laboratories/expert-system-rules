@@ -1,0 +1,43 @@
+id: attneg-cwa-d5-67
+title: ProofWriter AttNeg-CWA-D5-67
+description: "Bob is kind. Bob is nice. Bob is quiet. Bob is round. Charlie is cold. Charlie is red. Charlie is round. Fiona is nice. Fiona is quiet. Fiona is round. Fiona is white. Harry is white. If something is cold and quiet then it is white. White things are quiet. Round things are quiet. All kind things are quiet. If something is quiet then it is cold. If something is red then it is round. Round things are nice. If Bob is white and Bob is not kind then Bob is red. Quiet, cold things are red."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-67, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is cold, ?x is quiet], then: ?x is white }
+  - { id: R2, if: [?x is white], then: ?x is quiet }
+  - { id: R3, if: [?x is round], then: ?x is quiet }
+  - { id: R4, if: [?x is kind], then: ?x is quiet }
+  - { id: R5, if: [?x is quiet], then: ?x is cold }
+  - { id: R6, if: [?x is red], then: ?x is round }
+  - { id: R7, if: [?x is round], then: ?x is nice }
+  - { id: R8, if: [bob is white, not bob is kind], then: bob is red }
+  - { id: R9, if: [?x is quiet, ?x is cold], then: ?x is red }
+
+facts:
+  - bob is kind
+  - bob is nice
+  - bob is quiet
+  - bob is round
+  - charlie is cold
+  - charlie is red
+  - charlie is round
+  - fiona is nice
+  - fiona is quiet
+  - fiona is round
+  - fiona is white
+  - harry is white
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is cold, fiona is nice, bob is cold, charlie is nice, harry is cold, bob is white, harry is red, harry is round, harry is nice]
+    expect_not: [fiona is kind, harry is kind]

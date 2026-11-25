@@ -1,0 +1,45 @@
+id: relnoneg-cwa-d5-268
+title: ProofWriter RelNoneg-CWA-D5-268
+description: "The dog chases the rabbit. The dog is big. The dog visits the squirrel. The rabbit chases the dog. The rabbit likes the dog. The squirrel chases the rabbit. The squirrel chases the tiger. The squirrel visits the dog. The tiger chases the rabbit. The tiger is round. The tiger visits the rabbit. The tiger visits the squirrel. If something is nice then it is rough. If something is big and it likes the dog then the dog is round. If something chases the squirrel then it is big. If something likes the squirrel and it chases the squirrel then the squirrel is young. If the tiger is young and the tiger chases the rabbit then the rabbit visits the dog. If something is rough then it likes the squirrel. If something likes the squirrel then the squirrel is nice. If the rabbit chases the dog and the dog chases the rabbit then the rabbit is nice."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-268, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x is nice], then: ?x is rough }
+  - { id: R2, if: [?x is big, ?x likes dog], then: dog is round }
+  - { id: R3, if: [?x chases squirrel], then: ?x is big }
+  - { id: R4, if: [?x likes squirrel, ?x chases squirrel], then: squirrel is young }
+  - { id: R5, if: [tiger is young, tiger chases rabbit], then: rabbit visits dog }
+  - { id: R6, if: [?x is rough], then: ?x likes squirrel }
+  - { id: R7, if: [?x likes squirrel], then: squirrel is nice }
+  - { id: R8, if: [rabbit chases dog, dog chases rabbit], then: rabbit is nice }
+
+facts:
+  - dog chases rabbit
+  - dog is big
+  - dog visits squirrel
+  - rabbit chases dog
+  - rabbit likes dog
+  - squirrel chases rabbit
+  - squirrel chases tiger
+  - squirrel visits dog
+  - tiger chases rabbit
+  - tiger is round
+  - tiger visits rabbit
+  - tiger visits squirrel
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [squirrel chases rabbit, squirrel chases tiger, rabbit is nice, rabbit is rough, rabbit likes squirrel, squirrel is nice, squirrel is rough]
+    expect_not: [rabbit is big, squirrel is young, tiger is big, dog is round, squirrel is big, dog likes squirrel, squirrel is round, rabbit is round, dog is young, squirrel chases dog, dog chases tiger, tiger chases tiger]

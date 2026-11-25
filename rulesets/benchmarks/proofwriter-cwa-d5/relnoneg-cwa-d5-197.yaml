@@ -1,0 +1,45 @@
+id: relnoneg-cwa-d5-197
+title: ProofWriter RelNoneg-CWA-D5-197
+description: "The bald eagle sees the cow. The bald eagle sees the tiger. The cow chases the tiger. The cow is round. The cow likes the mouse. The cow sees the tiger. The mouse chases the bald eagle. The mouse likes the tiger. The mouse sees the cow. The tiger chases the bald eagle. The tiger likes the cow. If something is kind then it chases the mouse. If something chases the cow then the cow chases the bald eagle. If something likes the tiger and the tiger is kind then the tiger chases the cow. If something chases the bald eagle then the bald eagle likes the cow. If something is rough then it is kind. If something chases the bald eagle then it is young. If something likes the tiger then the tiger is rough. If something likes the bald eagle and the bald eagle sees the cow then the bald eagle likes the mouse. If something is red and it sees the cow then it chases the cow."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-197, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x is kind], then: ?x chases mouse }
+  - { id: R2, if: [?x chases cow], then: cow chases bald_eagle }
+  - { id: R3, if: [?x likes tiger, tiger is kind], then: tiger chases cow }
+  - { id: R4, if: [?x chases bald_eagle], then: bald_eagle likes cow }
+  - { id: R5, if: [?x is rough], then: ?x is kind }
+  - { id: R6, if: [?x chases bald_eagle], then: ?x is young }
+  - { id: R7, if: [?x likes tiger], then: tiger is rough }
+  - { id: R8, if: [?x likes bald_eagle, bald_eagle sees cow], then: bald_eagle likes mouse }
+  - { id: R9, if: [?x is red, ?x sees cow], then: ?x chases cow }
+
+facts:
+  - bald_eagle sees cow
+  - bald_eagle sees tiger
+  - cow chases tiger
+  - cow is round
+  - cow likes mouse
+  - cow sees tiger
+  - mouse chases bald_eagle
+  - mouse likes tiger
+  - mouse sees cow
+  - tiger chases bald_eagle
+  - tiger likes cow
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [cow chases tiger, mouse is young, tiger is rough, tiger is kind, tiger chases cow, cow chases bald_eagle, cow is young]
+    expect_not: [cow chases cow, bald_eagle likes mouse, mouse chases cow, bald_eagle chases cow, cow chases mouse, mouse chases mouse, mouse sees bald_eagle, tiger sees mouse, bald_eagle is rough, tiger likes tiger, cow is red, tiger chases tiger]

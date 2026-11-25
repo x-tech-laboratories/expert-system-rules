@@ -1,0 +1,40 @@
+id: attneg-cwa-d5-982
+title: ProofWriter AttNeg-CWA-D5-982
+description: "Bob is furry. Bob is white. Charlie is smart. Gary is white. Harry is blue. Harry is furry. Harry is green. Harry is red. Harry is smart. Harry is young. Smart people are blue. If someone is green and red then they are blue. All young, furry people are blue. Blue people are smart. All white people are green. If someone is white and green then they are young. If someone is young then they are red. If Harry is furry and Harry is smart then Harry is young."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-982, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is smart], then: ?x is blue }
+  - { id: R2, if: [?x is green, ?x is red], then: ?x is blue }
+  - { id: R3, if: [?x is young, ?x is furry], then: ?x is blue }
+  - { id: R4, if: [?x is blue], then: ?x is smart }
+  - { id: R5, if: [?x is white], then: ?x is green }
+  - { id: R6, if: [?x is white, ?x is green], then: ?x is young }
+  - { id: R7, if: [?x is young], then: ?x is red }
+  - { id: R8, if: [harry is furry, harry is smart], then: harry is young }
+
+facts:
+  - bob is furry
+  - bob is white
+  - charlie is smart
+  - gary is white
+  - harry is blue
+  - harry is furry
+  - harry is green
+  - harry is red
+  - harry is smart
+  - harry is young
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [harry is red, gary is white, gary is green, bob is green, bob is young, gary is young, bob is blue, bob is red, bob is smart, gary is blue, gary is smart]
+    expect_not: [charlie is green, charlie is young, charlie is red, gary is furry, charlie is furry, charlie is white]

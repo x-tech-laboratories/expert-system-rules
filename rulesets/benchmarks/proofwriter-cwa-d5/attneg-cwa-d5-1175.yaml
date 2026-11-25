@@ -1,0 +1,40 @@
+id: attneg-cwa-d5-1175
+title: ProofWriter AttNeg-CWA-D5-1175
+description: "Bob is quiet. Erin is blue. Erin is cold. Erin is green. Fiona is blue. Fiona is quiet. Harry is big. Harry is blue. Harry is cold. Harry is nice. If something is quiet and cold then it is blue. If Bob is cold then Bob is big. If something is blue and quiet then it is big. If something is nice then it is big. If something is big and nice then it is green. All red, big things are cold. Green things are red. Quiet, big things are nice."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-1175, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is quiet, ?x is cold], then: ?x is blue }
+  - { id: R2, if: [bob is cold], then: bob is big }
+  - { id: R3, if: [?x is blue, ?x is quiet], then: ?x is big }
+  - { id: R4, if: [?x is nice], then: ?x is big }
+  - { id: R5, if: [?x is big, ?x is nice], then: ?x is green }
+  - { id: R6, if: [?x is red, ?x is big], then: ?x is cold }
+  - { id: R7, if: [?x is green], then: ?x is red }
+  - { id: R8, if: [?x is quiet, ?x is big], then: ?x is nice }
+
+facts:
+  - bob is quiet
+  - erin is blue
+  - erin is cold
+  - erin is green
+  - fiona is blue
+  - fiona is quiet
+  - harry is big
+  - harry is blue
+  - harry is cold
+  - harry is nice
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [erin is green, harry is blue, fiona is big, fiona is nice, fiona is green, fiona is red, fiona is cold]
+    expect_not: [bob is cold, erin is nice, bob is blue, bob is green, bob is red, bob is big, erin is quiet, harry is quiet]

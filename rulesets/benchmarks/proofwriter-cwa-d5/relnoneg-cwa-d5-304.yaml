@@ -1,0 +1,49 @@
+id: relnoneg-cwa-d5-304
+title: ProofWriter RelNoneg-CWA-D5-304
+description: "The bear chases the mouse. The bear chases the rabbit. The bear eats the rabbit. The bear sees the rabbit. The cow chases the mouse. The cow chases the rabbit. The cow eats the mouse. The cow is big. The cow is kind. The cow sees the bear. The cow sees the rabbit. The mouse is kind. The rabbit chases the mouse. The rabbit eats the mouse. The rabbit is blue. The rabbit sees the bear. If someone eats the bear then the bear sees the rabbit. If someone sees the rabbit and they eat the bear then they eat the cow. All rough people are young. If someone eats the rabbit then they are rough. If the mouse eats the rabbit and the rabbit eats the cow then the mouse is kind. If someone is young then they eat the bear. If someone is rough and they eat the bear then the bear is kind. If someone is kind and they see the rabbit then they chase the cow."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-304, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  eats: The subject eats the object.
+  is: The subject has this property.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x eats bear], then: bear sees rabbit }
+  - { id: R2, if: [?x sees rabbit, ?x eats bear], then: ?x eats cow }
+  - { id: R3, if: [?x is rough], then: ?x is young }
+  - { id: R4, if: [?x eats rabbit], then: ?x is rough }
+  - { id: R5, if: [mouse eats rabbit, rabbit eats cow], then: mouse is kind }
+  - { id: R6, if: [?x is young], then: ?x eats bear }
+  - { id: R7, if: [?x is rough, ?x eats bear], then: bear is kind }
+  - { id: R8, if: [?x is kind, ?x sees rabbit], then: ?x chases cow }
+
+facts:
+  - bear chases mouse
+  - bear chases rabbit
+  - bear eats rabbit
+  - bear sees rabbit
+  - cow chases mouse
+  - cow chases rabbit
+  - cow eats mouse
+  - cow is big
+  - cow is kind
+  - cow sees bear
+  - cow sees rabbit
+  - mouse is kind
+  - rabbit chases mouse
+  - rabbit eats mouse
+  - rabbit is blue
+  - rabbit sees bear
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bear chases rabbit, bear chases mouse, cow chases cow, bear is young, bear eats bear, bear eats cow, bear is kind, bear chases cow]
+    expect_not: [rabbit is rough, mouse eats bear, mouse chases cow, rabbit eats bear, cow eats cow, mouse is young, rabbit sees rabbit, mouse sees cow, mouse is big, mouse sees rabbit, cow sees cow, cow sees mouse]

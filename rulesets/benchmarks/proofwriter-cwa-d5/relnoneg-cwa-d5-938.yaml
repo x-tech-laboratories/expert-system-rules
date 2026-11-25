@@ -1,0 +1,46 @@
+id: relnoneg-cwa-d5-938
+title: ProofWriter RelNoneg-CWA-D5-938
+description: "The bald eagle is green. The bald eagle needs the squirrel. The bald eagle sees the tiger. The bald eagle visits the mouse. The mouse is round. The mouse needs the squirrel. The mouse sees the squirrel. The squirrel is big. The squirrel is round. The squirrel needs the mouse. The squirrel visits the mouse. The squirrel visits the tiger. The tiger is big. The tiger is rough. The tiger needs the squirrel. The tiger visits the squirrel. If something visits the bald eagle and it is round then the bald eagle sees the squirrel. If something sees the tiger and it needs the squirrel then the tiger is round. If something is nice then it visits the bald eagle. If something is round then it sees the squirrel. If something sees the squirrel then it is nice."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-938, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+  needs: The subject needs the object.
+  sees: The subject sees the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x visits bald_eagle, ?x is round], then: bald_eagle sees squirrel }
+  - { id: R2, if: [?x sees tiger, ?x needs squirrel], then: tiger is round }
+  - { id: R3, if: [?x is nice], then: ?x visits bald_eagle }
+  - { id: R4, if: [?x is round], then: ?x sees squirrel }
+  - { id: R5, if: [?x sees squirrel], then: ?x is nice }
+
+facts:
+  - bald_eagle is green
+  - bald_eagle needs squirrel
+  - bald_eagle sees tiger
+  - bald_eagle visits mouse
+  - mouse is round
+  - mouse needs squirrel
+  - mouse sees squirrel
+  - squirrel is big
+  - squirrel is round
+  - squirrel needs mouse
+  - squirrel visits mouse
+  - squirrel visits tiger
+  - tiger is big
+  - tiger is rough
+  - tiger needs squirrel
+  - tiger visits squirrel
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bald_eagle sees tiger, mouse is round, squirrel sees squirrel, tiger is round, mouse visits bald_eagle, bald_eagle sees squirrel, squirrel visits bald_eagle, tiger visits bald_eagle, bald_eagle visits bald_eagle]
+    expect_not: [squirrel sees mouse, squirrel needs bald_eagle, squirrel is rough, tiger needs mouse, bald_eagle needs tiger, tiger sees mouse, tiger sees tiger, bald_eagle needs bald_eagle, mouse needs tiger, tiger visits tiger, tiger sees bald_eagle, bald_eagle is round]

@@ -1,0 +1,38 @@
+id: attneg-cwa-d5-475
+title: ProofWriter AttNeg-CWA-D5-475
+description: "Bob is green. Bob is smart. Bob is young. Dave is smart. Fiona is cold. Gary is cold. Gary is rough. If Dave is smart and Dave is rough then Dave is green. Smart, white things are rough. White, green things are cold. Cold things are white. All young things are white. If Gary is cold then Gary is green. If Fiona is young then Fiona is rough. Rough, young things are green. If something is smart then it is young."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-475, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [dave is smart, dave is rough], then: dave is green }
+  - { id: R2, if: [?x is smart, ?x is white], then: ?x is rough }
+  - { id: R3, if: [?x is white, ?x is green], then: ?x is cold }
+  - { id: R4, if: [?x is cold], then: ?x is white }
+  - { id: R5, if: [?x is young], then: ?x is white }
+  - { id: R6, if: [gary is cold], then: gary is green }
+  - { id: R7, if: [fiona is young], then: fiona is rough }
+  - { id: R8, if: [?x is rough, ?x is young], then: ?x is green }
+  - { id: R9, if: [?x is smart], then: ?x is young }
+
+facts:
+  - bob is green
+  - bob is smart
+  - bob is young
+  - dave is smart
+  - fiona is cold
+  - gary is cold
+  - gary is rough
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is young, fiona is white, gary is white, dave is white, dave is rough, dave is green, dave is cold]
+    expect_not: [fiona is young, gary is young, fiona is rough, fiona is green, gary is smart, fiona is big, gary is big, dave is big, bob is big, fiona is smart]

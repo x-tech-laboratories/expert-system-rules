@@ -1,0 +1,45 @@
+id: attneg-cwa-d5-618
+title: ProofWriter AttNeg-CWA-D5-618
+description: "Bob is green. Charlie is big. Charlie is blue. Charlie is furry. Charlie is quiet. Charlie is red. Charlie is round. Erin is big. Erin is blue. Erin is furry. Erin is quiet. Erin is red. Erin is round. Harry is quiet. All green people are round. All furry people are green. Red, big people are blue. All furry people are red. All round people are red. If someone is red and blue then they are quiet. If someone is big and furry then they are quiet. If Harry is quiet and Harry is not green then Harry is round. If someone is red and not furry then they are big."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-618, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is green], then: ?x is round }
+  - { id: R2, if: [?x is furry], then: ?x is green }
+  - { id: R3, if: [?x is red, ?x is big], then: ?x is blue }
+  - { id: R4, if: [?x is furry], then: ?x is red }
+  - { id: R5, if: [?x is round], then: ?x is red }
+  - { id: R6, if: [?x is red, ?x is blue], then: ?x is quiet }
+  - { id: R7, if: [?x is big, ?x is furry], then: ?x is quiet }
+  - { id: R8, if: [harry is quiet, not harry is green], then: harry is round }
+  - { id: R9, if: [?x is red, not ?x is furry], then: ?x is big }
+
+facts:
+  - bob is green
+  - charlie is big
+  - charlie is blue
+  - charlie is furry
+  - charlie is quiet
+  - charlie is red
+  - charlie is round
+  - erin is big
+  - erin is blue
+  - erin is furry
+  - erin is quiet
+  - erin is red
+  - erin is round
+  - harry is quiet
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is red, charlie is quiet, harry is round, bob is round, harry is red, bob is big, harry is big, harry is blue, bob is quiet]
+    expect_not: [harry is green, harry is furry]

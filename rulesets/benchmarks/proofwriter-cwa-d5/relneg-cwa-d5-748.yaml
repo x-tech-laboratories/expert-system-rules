@@ -1,0 +1,45 @@
+id: relneg-cwa-d5-748
+title: ProofWriter RelNeg-CWA-D5-748
+description: "The bear is green. The bear likes the mouse. The bear needs the cow. The bear needs the mouse. The bear sees the cow. The bear sees the mouse. The cow likes the bear. The cow sees the bear. The mouse likes the cow. The mouse sees the rabbit. The rabbit is young. If someone is kind then they need the bear. If someone sees the cow then they are cold. If someone is cold then they like the rabbit. If someone needs the bear then the bear is young. Young people are kind. If someone is round then they like the mouse. If someone likes the bear and they like the mouse then the bear likes the mouse. If someone likes the cow then the cow likes the bear. If someone is round and they do not need the bear then they see the rabbit."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-748, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+  likes: The subject likes the object.
+  needs: The subject needs the object.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x is kind], then: ?x needs bear }
+  - { id: R2, if: [?x sees cow], then: ?x is cold }
+  - { id: R3, if: [?x is cold], then: ?x likes rabbit }
+  - { id: R4, if: [?x needs bear], then: bear is young }
+  - { id: R5, if: [?x is young], then: ?x is kind }
+  - { id: R6, if: [?x is round], then: ?x likes mouse }
+  - { id: R7, if: [?x likes bear, ?x likes mouse], then: bear likes mouse }
+  - { id: R8, if: [?x likes cow], then: cow likes bear }
+  - { id: R9, if: [?x is round, not ?x needs bear], then: ?x sees rabbit }
+
+facts:
+  - bear is green
+  - bear likes mouse
+  - bear needs cow
+  - bear needs mouse
+  - bear sees cow
+  - bear sees mouse
+  - cow likes bear
+  - cow sees bear
+  - mouse likes cow
+  - mouse sees rabbit
+  - rabbit is young
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bear needs mouse, mouse sees rabbit, rabbit is kind, bear likes rabbit, bear is young, bear is kind, bear needs bear]
+    expect_not: [cow likes mouse, mouse needs bear, rabbit likes mouse, cow sees rabbit, mouse is kind, rabbit likes rabbit, cow is young, rabbit likes bear, cow is round, rabbit needs cow, cow sees mouse, cow likes cow]

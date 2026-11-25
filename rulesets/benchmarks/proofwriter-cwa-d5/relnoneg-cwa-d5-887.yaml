@@ -1,0 +1,46 @@
+id: relnoneg-cwa-d5-887
+title: ProofWriter RelNoneg-CWA-D5-887
+description: "The dog is big. The dog is young. The lion eats the squirrel. The lion is blue. The lion is young. The lion likes the mouse. The mouse chases the squirrel. The mouse eats the dog. The mouse eats the lion. The mouse is blue. The mouse is nice. The mouse likes the dog. The squirrel chases the dog. The squirrel is blue. If someone likes the dog and the dog chases the mouse then the mouse chases the dog. If someone is young and nice then they like the squirrel. If someone chases the dog then the dog eats the mouse. If someone eats the mouse then the mouse is young. If someone likes the squirrel and they like the dog then the dog chases the mouse. If someone chases the lion and the lion is rough then they are nice. If someone likes the mouse and they chase the mouse then the mouse eats the squirrel."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-887, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  eats: The subject eats the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+
+rules:
+  - { id: R1, if: [?x likes dog, dog chases mouse], then: mouse chases dog }
+  - { id: R2, if: [?x is young, ?x is nice], then: ?x likes squirrel }
+  - { id: R3, if: [?x chases dog], then: dog eats mouse }
+  - { id: R4, if: [?x eats mouse], then: mouse is young }
+  - { id: R5, if: [?x likes squirrel, ?x likes dog], then: dog chases mouse }
+  - { id: R6, if: [?x chases lion, lion is rough], then: ?x is nice }
+  - { id: R7, if: [?x likes mouse, ?x chases mouse], then: mouse eats squirrel }
+
+facts:
+  - dog is big
+  - dog is young
+  - lion eats squirrel
+  - lion is blue
+  - lion is young
+  - lion likes mouse
+  - mouse chases squirrel
+  - mouse eats dog
+  - mouse eats lion
+  - mouse is blue
+  - mouse is nice
+  - mouse likes dog
+  - squirrel chases dog
+  - squirrel is blue
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [lion eats squirrel, squirrel is blue, dog eats mouse, mouse is young, mouse likes squirrel, dog chases mouse, mouse chases dog]
+    expect_not: [dog is nice, mouse eats squirrel, dog likes squirrel, lion is nice, squirrel likes squirrel, lion likes squirrel, squirrel eats dog, lion eats dog, mouse chases mouse, squirrel eats squirrel, squirrel chases lion, lion chases mouse]

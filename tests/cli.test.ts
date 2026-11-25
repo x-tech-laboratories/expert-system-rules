@@ -1,9 +1,11 @@
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { run_cli } from "../src/cli.ts";
+import type { ProofWriterRecord } from "../src/importers/proofwriter.ts";
+import { sample_record } from "./fixtures/proofwriter.ts";
 import type { ProgramRunner } from "../src/runner.ts";
 
 // ============================================================================
@@ -107,6 +109,61 @@ describe("run_cli", () => {
 
     expect(result.code).toBe(1);
     expect(result.err).toContain("ENOENT");
+  });
+});
+
+// ============================================================================
+// import-proofwriter
+// ============================================================================
+
+describe("import-proofwriter", () => {
+  const looping: ProofWriterRecord = {
+    ...sample_record,
+    id: "AttNeg-CWA-D1-9",
+    rules: { rule1: { representation: `((("someone" "is" "big" "+") ("someone" "is" "red" "~")) -> ("someone" "is" "red" "+"))` } },
+  };
+  const disagreeing: ProofWriterRecord = {
+    ...sample_record,
+    id: "RelNeg-CWA-D1-8",
+    questions: { Q1: { question: "The cow is big.", answer: true, representation: `("cow" "is" "big" "+")` } },
+  };
+
+  async function source(records: ProofWriterRecord[]): Promise<string> {
+    const folder = await mkdtemp(join(tmpdir(), "proofwriter-"));
+    await writeFile(join(folder, "meta-test.jsonl"), records.map(record => JSON.stringify(record)).join("\n") + "\n");
+    return folder;
+  }
+
+  it("converts, checks and writes every Nth theory", async () => {
+    const folder = await source([sample_record, { ...sample_record, id: "RelNeg-CWA-D1-9" }]);
+    const result = await run(["import-proofwriter", "meta-test.jsonl", "out", "--every", "2"], folder);
+
+    expect(result.code).toBe(0);
+    expect(result.out).toBe(
+      `2 theories: 2 fully reproduced, 0 with different answers, 0 refused\n8/8 answers match ProofWriter\nwrote 1 rule sets to ${join(folder, "out")}\n`,
+    );
+    expect(await readdir(join(folder, "out"))).toEqual(["relneg-cwa-d1-7.yaml"]);
+  });
+
+  it("reports theories it refuses and answers it disagrees with", async () => {
+    const result = await run(["import-proofwriter", "meta-test.jsonl", "out"], await source([looping, disagreeing]));
+
+    expect(result.code).toBe(1);
+    expect(result.out).toContain("2 theories: 0 fully reproduced, 1 with different answers, 1 refused");
+    expect(result.out).toContain("  RelNeg-CWA-D1-8: the engine disagrees with 1 of ProofWriter's 1 answers");
+    expect(result.out).toContain("  AttNeg-CWA-D1-9: a conclusion depends on its own negation, so the rules have no single answer");
+  });
+
+  it("reports a theory that does not convert", async () => {
+    const broken = { ...sample_record, id: "Broken-1", triples: { triple1: { representation: `("cow" "is" "big" "-")` } } };
+    const result = await run(["import-proofwriter", "meta-test.jsonl", "out"], await source([broken]));
+
+    expect(result.out).toContain("  Broken-1: Broken-1 triple1: only positive facts can be converted");
+  });
+
+  it("needs a source, a folder and a sensible --every", async () => {
+    expect(await run(["import-proofwriter", "only-one"], "/")).toMatchObject({ code: 2 });
+    expect(await run(["import-proofwriter", "a", "b", "--every", "0"], "/")).toMatchObject({ code: 2, err: "--every needs a whole number of 1 or more\n" });
   });
 });
 

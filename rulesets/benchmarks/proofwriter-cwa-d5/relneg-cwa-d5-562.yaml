@@ -1,0 +1,41 @@
+id: relneg-cwa-d5-562
+title: ProofWriter RelNeg-CWA-D5-562
+description: "The cat sees the cow. The cat sees the mouse. The cow likes the dog. The cow likes the mouse. The cow sees the dog. The dog is blue. The dog is nice. The dog likes the mouse. The mouse is green. The mouse needs the cat. If someone sees the dog and they do not like the cow then they are nice. If someone needs the dog and the dog is kind then they like the dog. If someone is nice and they do not like the cow then they need the mouse. If someone needs the mouse and they are not blue then the mouse sees the dog. If someone likes the cow and they are not nice then they are green. If someone needs the cow and they are not green then they are big."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-562, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+  likes: The subject likes the object.
+  needs: The subject needs the object.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x sees dog, not ?x likes cow], then: ?x is nice }
+  - { id: R2, if: [?x needs dog, dog is kind], then: ?x likes dog }
+  - { id: R3, if: [?x is nice, not ?x likes cow], then: ?x needs mouse }
+  - { id: R4, if: [?x needs mouse, not ?x is blue], then: mouse sees dog }
+  - { id: R5, if: [?x likes cow, not ?x is nice], then: ?x is green }
+  - { id: R6, if: [?x needs cow, not ?x is green], then: ?x is big }
+
+facts:
+  - cat sees cow
+  - cat sees mouse
+  - cow likes dog
+  - cow likes mouse
+  - cow sees dog
+  - dog is blue
+  - dog is nice
+  - dog likes mouse
+  - mouse is green
+  - mouse needs cat
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [cow likes mouse, dog is blue, dog needs mouse, cow needs mouse, mouse sees dog, mouse is nice, mouse needs mouse]
+    expect_not: [mouse likes dog, dog is green, cat needs mouse, dog likes dog, cat is big, mouse is big, cow likes cat, dog sees cow, mouse is kind, dog needs cow, cow needs dog, dog likes cat]

@@ -1,0 +1,41 @@
+id: attnoneg-cwa-d5-602
+title: ProofWriter AttNoneg-CWA-D5-602
+description: "Anne is green. Anne is smart. Bob is smart. Bob is white. Erin is cold. Erin is smart. Erin is white. Harry is big. Harry is nice. Harry is round. Harry is white. White things are round. All smart things are round. All big things are cold. If Erin is nice and Erin is smart then Erin is green. If something is white and cold then it is nice. All green, round things are big. All cold things are green. All round things are green."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-602, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is white], then: ?x is round }
+  - { id: R2, if: [?x is smart], then: ?x is round }
+  - { id: R3, if: [?x is big], then: ?x is cold }
+  - { id: R4, if: [erin is nice, erin is smart], then: erin is green }
+  - { id: R5, if: [?x is white, ?x is cold], then: ?x is nice }
+  - { id: R6, if: [?x is green, ?x is round], then: ?x is big }
+  - { id: R7, if: [?x is cold], then: ?x is green }
+  - { id: R8, if: [?x is round], then: ?x is green }
+
+facts:
+  - anne is green
+  - anne is smart
+  - bob is smart
+  - bob is white
+  - erin is cold
+  - erin is smart
+  - erin is white
+  - harry is big
+  - harry is nice
+  - harry is round
+  - harry is white
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is smart, harry is white, erin is nice, erin is big, anne is big, anne is cold, bob is cold, bob is nice]
+    expect_not: [anne is nice, harry is smart]

@@ -41,8 +41,9 @@ conclusion are alternatives: either one is enough.
 in before it is read.
 
 The engine runs rules in layers, so a `not` is only read once everything that could conclude it
-has run. Triples are grouped for this by relation and, when the object is fixed, by object too, so
-`?x is grounded` and `?x is flier` are separate. A rule set where a conclusion depends on its own
+has run. Triples are grouped for this by relation and, when they are fixed, by subject and object
+too, so `?x is grounded` and `?x is flier` are separate, as are `cat visits mouse` and
+`rabbit visits mouse`. A rule set where a conclusion depends on its own
 negation has no single answer and is refused.
 
 ## Cases

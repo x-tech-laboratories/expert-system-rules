@@ -1,0 +1,42 @@
+id: attneg-cwa-d5-1042
+title: ProofWriter AttNeg-CWA-D5-1042
+description: "Anne is cold. Anne is furry. Anne is quiet. Anne is white. Anne is young. Bob is green. Bob is young. Charlie is blue. Charlie is cold. Erin is green. Erin is quiet. If something is cold then it is blue. All young, furry things are blue. White, quiet things are blue. All cold, furry things are white. Quiet things are furry. All young things are quiet. If Erin is young then Erin is cold. Blue things are cold. If something is white and not cold then it is green."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-1042, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is cold], then: ?x is blue }
+  - { id: R2, if: [?x is young, ?x is furry], then: ?x is blue }
+  - { id: R3, if: [?x is white, ?x is quiet], then: ?x is blue }
+  - { id: R4, if: [?x is cold, ?x is furry], then: ?x is white }
+  - { id: R5, if: [?x is quiet], then: ?x is furry }
+  - { id: R6, if: [?x is young], then: ?x is quiet }
+  - { id: R7, if: [erin is young], then: erin is cold }
+  - { id: R8, if: [?x is blue], then: ?x is cold }
+  - { id: R9, if: [?x is white, not ?x is cold], then: ?x is green }
+
+facts:
+  - anne is cold
+  - anne is furry
+  - anne is quiet
+  - anne is white
+  - anne is young
+  - bob is green
+  - bob is young
+  - charlie is blue
+  - charlie is cold
+  - erin is green
+  - erin is quiet
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is cold, anne is blue, bob is quiet, bob is furry, bob is blue, bob is cold, bob is white]
+    expect_not: [erin is white, charlie is white, charlie is furry, charlie is quiet, anne is green, erin is cold, charlie is young, erin is young]

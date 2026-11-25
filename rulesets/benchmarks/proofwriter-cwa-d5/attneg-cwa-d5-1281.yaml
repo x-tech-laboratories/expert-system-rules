@@ -1,0 +1,36 @@
+id: attneg-cwa-d5-1281
+title: ProofWriter AttNeg-CWA-D5-1281
+description: "Anne is furry. Anne is rough. Anne is smart. Dave is rough. Erin is round. Erin is smart. Harry is nice. If someone is smart and rough then they are nice. If someone is round then they are furry. All big people are smart. All furry people are big. Nice people are big. If Dave is rough then Dave is round. If someone is smart then they are rough."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-1281, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is smart, ?x is rough], then: ?x is nice }
+  - { id: R2, if: [?x is round], then: ?x is furry }
+  - { id: R3, if: [?x is big], then: ?x is smart }
+  - { id: R4, if: [?x is furry], then: ?x is big }
+  - { id: R5, if: [?x is nice], then: ?x is big }
+  - { id: R6, if: [dave is rough], then: dave is round }
+  - { id: R7, if: [?x is smart], then: ?x is rough }
+
+facts:
+  - anne is furry
+  - anne is rough
+  - anne is smart
+  - dave is rough
+  - erin is round
+  - erin is smart
+  - harry is nice
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [erin is smart, anne is furry, anne is big, dave is furry, erin is nice, dave is big, harry is rough, dave is smart, dave is nice]
+    expect_not: [harry is furry, anne is round, anne is kind, erin is kind, harry is round, harry is kind]
