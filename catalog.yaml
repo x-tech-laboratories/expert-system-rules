@@ -7,6 +7,7 @@ subjects:
   benchmarks: Rule sets converted from published reasoning benchmarks.
   commonsense: { description: Everyday knowledge a conversational assistant needs., wikidata: Q332880 }
   core: The shallow backbone of kinds that other rule sets import.
+  practical: { description: "Everyday practical know-how such as food safety, first aid, money and home repairs.", wikidata: Q460693 }
   fiction: Made-up worlds, so a model cannot answer from what it already knows.
   vehicles: { description: Diagnosing and maintaining vehicles., wikidata: Q42889 }
 
@@ -25,6 +26,7 @@ tags:
   emotions: How people feel.
   people: People and how they treat each other.
   social-norms: What people are expected to do.
+  food-safety: Storing, cooking and serving food without making people ill.
   physics: How objects move, fall and break.
   location: Where things are.
   quantities: Sizes, amounts and units.

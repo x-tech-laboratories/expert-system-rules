@@ -65,7 +65,7 @@ export function extraction_prompt(task: ExtractionTask): string {
 // ── Scoring ──────────────────────────────────────────────────────────────────
 
 // The YAML in a reply: the first fenced block if there is one, else the whole reply.
-function yaml_of(reply: string): string {
+export function yaml_of(reply: string): string {
   return reply.match(/```(?:ya?ml)?\s*\n([\s\S]*?)```/)?.[1] ?? reply;
 }
 

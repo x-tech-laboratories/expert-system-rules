@@ -497,8 +497,8 @@ class FileLibrary implements Library {
     return this.rule_sets.get(name);
   }
 
-  async load(path: string, loading: string[] = []): Promise<RuleSet> {
-    const text = await readFile(path, "utf8");
+  async load(path: string, loading: string[] = [], given?: string): Promise<RuleSet> {
+    const text = given ?? (await readFile(path, "utf8"));
     if (this.root) {
       let wanted: Mapping = {};
       try {
@@ -524,6 +524,12 @@ class FileLibrary implements Library {
 export async function load_rule_set(path: string): Promise<RuleSet> {
   const catalog = await find_catalog(path);
   return new FileLibrary(catalog?.root ?? null).load(path, [path]);
+}
+
+// Loads a rule set that is not saved yet as if it were the file at path, with that place's vocabularies and imports.
+export async function load_rule_set_text(text: string, path: string): Promise<RuleSet> {
+  const catalog = await find_catalog(path);
+  return new FileLibrary(catalog?.root ?? null).load(path, [path], text);
 }
 
 // Lists every .yaml file under a folder and its subject subfolders, in path order.

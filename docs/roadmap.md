@@ -20,8 +20,9 @@ part; the work is in verifying, scoping and governing them.
 1. **Provenance per fact.** Rules carry `source` and `method`; facts brought in from elsewhere need
    the same, down to the Wikidata item, statement id and snapshot date each one came from, so every
    conclusion can cite the statements behind it.
-2. **An LLM drafting command.** `draft --source document.txt` asks a model for candidate rules, each
-   with its citation and test cases, written as a new rule set for review in a pull request.
+2. **An LLM drafting command.** Done as `draft` (quotes checked word for word, problems sent back for
+   repair), measured first with `bench-extract`. Still to come: opening the pull request itself, and
+   drafting from long sources in sections.
 3. **Stronger checks in CI.** Rules that can never fire, conclusions nothing uses, two rule sets
    with the same id, and test cases that cover every rule at least once.
 4. **Scopes.** Done as modules and imports (see [format.md](format.md#organising)). Still to come:
