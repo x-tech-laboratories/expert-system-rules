@@ -120,8 +120,9 @@ The jobs differ in difficulty:
 **Measuring it instead of guessing.** Every converted ProofWriter file keeps its English theory in
 `description` and its correct answers in its case. A model can be asked to write the rules from the
 English alone, and the engine can then answer the questions with the model's rules: the share of
-matching answers is a score for rule extraction, per model. That benchmark is the first thing to build
-with the `draft` command, before trusting any model with ATOMIC.
+matching answers is a score for rule extraction, per model. This is built as `bench-extract`, and the
+first results (Sonnet 797/797 on depth-5, Haiku 776/797) are in [benchmarks.md](benchmarks.md). The
+`draft` command comes next, before trusting any model with ATOMIC.
 
 The machine this started on has a 4 GB GPU shared with other work, so local runs are coordinated with
 whatever else holds the GPU, and hosted models are the fallback for the harder jobs.

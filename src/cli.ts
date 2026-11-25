@@ -6,6 +6,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { explain, infer, query, type Answer } from "./engine.ts";
+import { extraction_prompt, score_extraction, type ExtractionScore, type ExtractionTask } from "./extract.ts";
 import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
 import { catalog_problems, find_catalog, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
@@ -34,6 +35,9 @@ const usage = `Usage:
   expert-system-rules prompt <file.yaml>             print the prompt a model is given
   expert-system-rules bench [--runs N] [file.yaml ...] -- <command ...>
                                                      send each rule set's prompt to a command on stdin and score its JSON answer
+  expert-system-rules bench-extract [--every N] [--jobs N] <meta-file.jsonl> -- <command ...>
+                                                     give a command every Nth ProofWriter theory's English (default 20), and score
+                                                     the facts and rules it writes by the engine's answers to the theory's questions
   expert-system-rules import-proofwriter <meta-file.jsonl> <out-folder> [--every N]
                                                      convert ProofWriter's closed-world theories, check each against the engine,
                                                      and write every Nth one (default 20) as a rule set
@@ -155,6 +159,61 @@ async function bench(context: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+// Takes "--name N" out of the arguments; null when it is not a whole number of 1 or more.
+function take_count(args: string[], name: string, fallback: number): { value: number | null; rest: string[] } {
+  const at = args.indexOf(name);
+  if (at < 0) return { value: fallback, rest: args };
+  const value = Number(args[at + 1]);
+  return { value: Number.isInteger(value) && value >= 1 ? value : null, rest: args.filter((_, index) => index !== at && index !== at + 1) };
+}
+
+async function bench_extract(context: CliContext, args: string[]): Promise<number> {
+  const split = args.indexOf("--");
+  const command = split < 0 ? [] : args.slice(split + 1);
+  const every = take_count(split < 0 ? args : args.slice(0, split), "--every", 20);
+  const jobs = take_count(every.rest, "--jobs", 1);
+  if (!command.length || every.value === null || jobs.value === null || jobs.rest.length !== 1) {
+    line(context.err, "bench-extract needs a ProofWriter meta file and a command after --; --every and --jobs take whole numbers of 1 or more");
+    return 2;
+  }
+
+  const lines = (await readFile(resolve(context.cwd, jobs.rest[0]), "utf8")).split("\n").filter(text => text.trim());
+  const tasks: ExtractionTask[] = [];
+  for (const [index, text] of lines.entries()) {
+    if (index % every.value !== 0) continue;
+    const record = JSON.parse(text) as ProofWriterRecord;
+    try {
+      const reference_yaml = convert_theory(record);
+      tasks.push({ id: record.id, english: record.theory, reference_yaml, reference: parse_rule_set(reference_yaml, record.id) });
+    } catch {
+      // A theory the engine cannot take as the reference is left out, as import-proofwriter reports.
+    }
+  }
+
+  const scores: ExtractionScore[] = [];
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < tasks.length) {
+      const index = next++;
+      const task = tasks[index];
+      try {
+        scores[index] = score_extraction(task, await ask_model(command, extraction_prompt(task), context.run));
+      } catch (error) {
+        scores[index] = { id: task.id, correct: 0, total: task.reference.cases.reduce((sum, entry) => sum + questions_of(entry).length, 0), problem: (error as Error).message };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: jobs.value }, worker));
+
+  for (const result of scores) line(context.out, `${result.id}: ${result.correct}/${result.total} answers${result.problem ? ` (unusable: ${result.problem})` : ""}`);
+  const correct = scores.reduce((sum, result) => sum + result.correct, 0);
+  const total = scores.reduce((sum, result) => sum + result.total, 0);
+  const perfect = scores.filter(result => result.correct === result.total && !result.problem).length;
+  const unusable = scores.filter(result => result.problem).length;
+  line(context.out, `total: ${correct}/${total} answers, ${perfect}/${scores.length} theories fully right, ${unusable} unusable`);
+  return 0;
+}
+
 async function import_proofwriter(context: CliContext, args: string[]): Promise<number> {
   let every = 20;
   const every_at = args.indexOf("--every");
@@ -233,6 +292,8 @@ export async function run_cli(args: string[], context: CliContext): Promise<numb
         return 0;
       case "bench":
         return await bench(context, rest);
+      case "bench-extract":
+        return await bench_extract(context, rest);
       case "import-proofwriter":
         return await import_proofwriter(context, rest);
       case undefined:

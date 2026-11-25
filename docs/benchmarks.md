@@ -29,3 +29,31 @@ tests are:
    the rules it writes by the engine's answers ([porting.md](porting.md), task 1).
 2. **Open-world answers**, where the right answer is often "unknown" (`commonsense/typical`).
 3. **Scale**: hundreds of rules and facts in one prompt, where a model must find the few that matter.
+
+## 2026-11-24: rules read from English (`bench-extract`), Haiku and Sonnet
+
+Each model got a ProofWriter theory's English, its relation names and the names it uses, and wrote
+the facts and rules; the engine then answered the theory's questions with the model's rules. Every
+20th theory of the depth-5 test file (50) and every 10th of the NatLang test file (49), one run each,
+four at a time.
+
+| Theories | Answers | Haiku | Sonnet |
+| --- | --- | --- | --- |
+| Depth-5, generated English | 797 | 776 (49/50 theories fully right) | 797 (50/50) |
+| NatLang, paraphrased English | 679 | 623 (27/49) | 645 (34/49) |
+
+- Haiku's one depth-5 failure was unusable rather than wrong: it wrote `mouse not likes cat` inside a
+  condition, which the format refuses, so all 21 answers of that theory count as wrong.
+- **NatLang scores understate the models.** ProofWriter's NatLang theories were paraphrased by crowd
+  workers, and some paraphrases contradict the formal theory they came from. In
+  `AttNonegNatLang-CWA-290`, "when you meet someone who is nice and kind, they won't feel blue" encodes
+  the rule *nice and kind → blue*, and "if someone is green and naive they may also have red, rough
+  skin; it is a safe guess then that they are also round" encodes *red, rough and green → round*. A
+  model that translates the English faithfully is marked wrong. The two models miss mostly the same
+  theories, which points at the data. A cleaned subset is needed before NatLang can rank models.
+
+**What it shows.** On clear English, a mid-size hosted model translates depth-5 theories with negation
+into rules that reproduce every answer, and a small one nearly does; the engine's checks turn the
+remaining slip into a refusal rather than a silent error. Drafting rule sets from clear text with
+review looks workable. Messy, ambiguous text is where the error rate climbs, so drafts from real
+sources need their test cases and a human reviewer. Local models are still to be run.

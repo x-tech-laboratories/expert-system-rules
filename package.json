@@ -19,6 +19,7 @@
     "query": "node src/cli.ts query",
     "prompt": "node src/cli.ts prompt",
     "bench": "node src/cli.ts bench",
+    "bench-extract": "node src/cli.ts bench-extract",
     "import-proofwriter": "node src/cli.ts import-proofwriter"
   },
   "dependencies": {

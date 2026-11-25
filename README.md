@@ -73,11 +73,18 @@ npm run query -- rulesets/commonsense/kitchen.yaml cooler_on_counter "cheese in 
 npm run prompt -- rulesets/fiction/creatures.yaml # the prompt a model is given
 npm run import-proofwriter -- CWA/depth-5/meta-test.jsonl out/   # convert ProofWriter theories
 npm run bench -- --runs 3 -- claude -p --model haiku
+npm run bench-extract -- --jobs 4 CWA/depth-5/meta-test.jsonl -- claude -p --model haiku
 ```
 
 `bench` sends each rule set's prompt to any command on its standard input and reads a JSON answer
 from its output, so it works with any model that has a command line, such as `claude -p`,
-`llm`, or `ollama run <model>`. Each case's questions are true/false, one point each.
+`llm`, or `ollama run <model>`. Each case's questions are true/false (or unknown, for open-world
+relations), one point each.
+
+`bench-extract` tests the harder half: a model is given a ProofWriter theory's English, its relations
+and names, writes the facts and rules itself, and is scored by how the engine then answers the
+theory's questions. It measures how well a model could draft rule sets. Results are in
+[docs/benchmarks.md](docs/benchmarks.md).
 
 ## Contributing a rule set
 
