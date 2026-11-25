@@ -1,0 +1,78 @@
+id: physics
+title: Everyday physics
+description: >
+  How things behave around the house: something unsupported falls and takes what is on it along,
+  fragile things break unless they land on something soft, things float when lighter than water,
+  ice melts somewhere warm, metal touching something hot gets hot, and flammable things near fire burn.
+license: CC-BY-SA-4.0
+tags: [commonsense, physics, causation, negation, trap-cases, original]
+source: Original to this repository.
+
+relations:
+  is: The subject has this property or belongs to this kind.
+  "on": The subject rests directly on top of the object.
+  held_by: The subject is being held by the object.
+  attached_to: The subject is fixed to the object.
+  made_of: The subject is made of this material.
+  less_dense_than: The subject material is lighter, for its volume, than the object material.
+  in: The subject is inside the object.
+  touches: The subject is in contact with the object.
+  near: The subject is close to the object.
+
+rules:
+  - { id: P1, if: [?x is ground], then: ?x is supported }
+  - { id: P2, if: [?x on ?y, ?y is supported], then: ?x is supported }
+  - { id: P3, if: [?x held_by ?p], then: ?x is supported }
+  - { id: P4, if: [?x attached_to ?y, ?y is supported], then: ?x is supported }
+  - { id: P5, if: [?x is object, not ?x is supported], then: ?x is falling }
+  - { id: P6, if: [?x is falling, ?x is fragile, not ?x is landing_on_soft], then: ?x is breaking }
+  - { id: P7, if: [?a less_dense_than ?b, ?b less_dense_than ?c], then: ?a less_dense_than ?c }
+  - { id: P8, if: [?x in ?w, ?w made_of water, ?x made_of ?m, ?m less_dense_than water], then: ?x is floating }
+  - { id: P9, if: [?x in ?w, ?w made_of water, not ?x is floating], then: ?x is sinking }
+  - { id: P10, if: [?x made_of ice, ?x in ?place, ?place is warm], then: ?x is melting }
+  - { id: P11, if: [?x made_of metal, ?x touches ?h, ?h is hot], then: ?x is hot }
+  - { id: P12, if: [?x is flammable, ?x near ?f, ?f is fire], then: ?x is burning }
+  - { id: P13, if: [?x is burning], then: ?x is hot }
+
+facts:
+  - floor is ground
+  - wood less_dense_than water
+  - plastic_foam less_dense_than wood
+  - water less_dense_than stone
+  - water less_dense_than metal
+
+cases:
+  - id: cup_on_table
+    facts: [table on floor, cup on table, table is object, cup is object]
+    expect: [cup is supported, table is supported]
+    expect_not: [cup is falling]
+  - id: dropped_tray
+    note: The tray is let go of, and the glass on it falls with it.
+    facts: [tray is object, glass is object, glass on tray, glass is fragile]
+    expect: [tray is falling, glass is falling, glass is breaking]
+    expect_not: [glass is supported]
+  - id: soft_landing
+    note: Trap. A falling egg that lands on a cushion does not break here.
+    facts: [egg is object, egg is fragile, egg is landing_on_soft]
+    expect: [egg is falling]
+    expect_not: [egg is breaking]
+  - id: shelf_on_wall
+    facts: [wall is ground, shelf attached_to wall, vase on shelf, vase is object, shelf is object, vase is fragile]
+    expect: [vase is supported, shelf is supported]
+    expect_not: [vase is falling, vase is breaking]
+  - id: bath_toys
+    facts: [bath made_of water, duck made_of plastic_foam, spoon made_of metal, duck in bath, spoon in bath]
+    expect: [duck is floating, spoon is sinking, plastic_foam less_dense_than water]
+    expect_not: [duck is sinking, spoon is floating]
+  - id: ice_and_pan
+    facts: [kitchen is warm, cube made_of ice, cube in kitchen, pan made_of metal, stove is hot, pan touches stove]
+    expect: [cube is melting, pan is hot]
+    expect_not: [stove is melting]
+  - id: candle_near_curtain
+    facts: [candle is fire, curtain is flammable, curtain near candle, book is flammable]
+    expect: [curtain is burning, curtain is hot]
+    expect_not: [book is burning]
+  - id: ice_in_freezer
+    note: Trap. Ice is only said to melt somewhere warm, and nothing says the freezer is warm.
+    facts: [cube made_of ice, cube in freezer]
+    expect_not: [cube is melting]

@@ -1,0 +1,72 @@
+id: people
+title: People, needs and manners
+description: >
+  Everyday reasoning about people: needs lead to wants, getting or being denied what you want leads
+  to feelings, kindness calls for thanks until it is given, borrowed things are owed back, and a
+  young child alone somewhere dangerous needs an adult.
+license: CC-BY-SA-4.0
+tags: [commonsense, people, emotions, social-norms, negation, trap-cases, original]
+source: Original to this repository.
+
+relations:
+  is: The subject person has this state or belongs to this kind.
+  skipped: The subject person missed this meal or rest.
+  wants: The subject person wants this.
+  got: The subject person received this.
+  denied: The subject person was refused this.
+  lost: The subject person lost this.
+  values: The subject person cares about this.
+  helped: The subject person helped the object person.
+  thanked: The subject person has thanked the object person.
+  should_thank: The subject person ought to thank the object person.
+  borrowed_from: The subject person borrowed something from the object person.
+  returned_to: The subject person gave back what they borrowed from the object person.
+  owes: The subject person still has something that belongs to the object person.
+  alone_at: The subject person is at this place without an adult.
+  needs: The subject person needs this.
+
+rules:
+  - { id: H1, if: [?p skipped meal], then: ?p is hungry }
+  - { id: H2, if: [?p skipped sleep], then: ?p is tired }
+  - { id: H3, if: [?p is hungry, not ?p is fasting], then: ?p wants food }
+  - { id: H4, if: [?p is tired], then: ?p wants rest }
+  - { id: H5, if: [?p wants ?x, ?p got ?x], then: ?p is satisfied }
+  - { id: H6, if: [?p wants ?x, ?p denied ?x], then: ?p is frustrated }
+  - { id: H7, if: [?p lost ?x, ?p values ?x], then: ?p is sad }
+  - { id: H8, if: [?q helped ?p, not ?p thanked ?q], then: ?p should_thank ?q }
+  - { id: H9, if: [?p borrowed_from ?q, not ?p returned_to ?q], then: ?p owes ?q }
+  - { id: H10, if: [?p is young_child, ?p alone_at ?place, ?place is dangerous], then: ?p needs adult }
+  - { id: H11, if: [?p is satisfied, not ?p is sad], then: ?p is content }
+
+cases:
+  - id: missed_lunch
+    facts: [sam skipped meal, sam got food]
+    expect: [sam is hungry, sam wants food, sam is satisfied, sam is content]
+    expect_not: [sam is frustrated, sam wants rest]
+  - id: fasting
+    note: Trap. A fasting person is hungry but, by these rules, does not want food.
+    facts: [ana skipped meal, ana is fasting]
+    expect: [ana is hungry]
+    expect_not: [ana wants food, ana is satisfied]
+  - id: no_rest
+    facts: [lee skipped sleep, lee denied rest]
+    expect: [lee is tired, lee wants rest, lee is frustrated]
+    expect_not: [lee is hungry]
+  - id: lost_keys
+    note: Losing something you do not care about leaves you unmoved.
+    facts: [kim lost keys, kim values keys, kim lost pen]
+    expect: [kim is sad]
+    expect_not: [kim is satisfied]
+  - id: content_except_sad
+    note: Trap. Satisfied but sad is not content.
+    facts: [jo skipped meal, jo got food, jo lost ring, jo values ring]
+    expect: [jo is satisfied, jo is sad]
+    expect_not: [jo is content]
+  - id: thanks_and_loans
+    facts: [mia helped noah, ben helped noah, noah thanked ben, noah borrowed_from mia, noah borrowed_from ben, noah returned_to ben]
+    expect: [noah should_thank mia, noah owes mia]
+    expect_not: [noah should_thank ben, noah owes ben, mia should_thank noah]
+  - id: child_alone
+    facts: [tim is young_child, tim alone_at pool, pool is dangerous, eva is young_child, eva alone_at garden]
+    expect: [tim needs adult]
+    expect_not: [eva needs adult]

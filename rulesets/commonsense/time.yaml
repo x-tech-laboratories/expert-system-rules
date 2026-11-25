@@ -1,0 +1,74 @@
+id: time
+title: Time and order
+description: >
+  Everyday reasoning about when things happen: the order of the days of one week, what is past or
+  still to come relative to now, events that happen during other events, who is older, and timelines
+  that contradict themselves. It works with order, not clock arithmetic.
+license: CC-BY-SA-4.0
+tags: [commonsense, time, transitivity, trap-cases, original]
+source: Original to this repository.
+
+relations:
+  before: The subject happens earlier than the object.
+  after: The subject happens later than the object.
+  next_day: The object is the day straight after the subject, within one week.
+  happens_on: The subject event takes place on this day.
+  during: The subject happens inside the time of the object event.
+  born_at: The subject person was born at this event.
+  older_than: The subject person was born earlier than the object person.
+  conflicts_with: The timeline says the subject is both before and after the object.
+  is: The subject has this property.
+
+rules:
+  - { id: T1, if: [?a before ?b, ?b before ?c], then: ?a before ?c }
+  - { id: T2, if: [?a before ?b], then: ?b after ?a }
+  - { id: T3, if: [?d next_day ?e], then: ?d before ?e }
+  - { id: T4, if: [?x happens_on ?d, ?y happens_on ?e, ?d before ?e], then: ?x before ?y }
+  - { id: T5, if: [?a during ?p, ?p before ?b], then: ?a before ?b }
+  - { id: T6, if: [?b before ?p, ?a during ?p], then: ?b before ?a }
+  - { id: T7, if: [?a before now], then: ?a is past }
+  - { id: T8, if: [now before ?a], then: ?a is future }
+  - { id: T9, if: [?x happens_on ?d, now happens_on ?d], then: ?x is today }
+  - { id: T10, if: [?p born_at ?e, ?q born_at ?f, ?e before ?f], then: ?p older_than ?q }
+  - { id: T11, if: [?a before ?b, ?b before ?a], then: ?a conflicts_with ?b }
+
+facts:
+  - monday next_day tuesday
+  - tuesday next_day wednesday
+  - wednesday next_day thursday
+  - thursday next_day friday
+  - friday next_day saturday
+  - saturday next_day sunday
+
+cases:
+  - id: midweek
+    facts: [now happens_on wednesday, meeting happens_on monday, dentist happens_on friday, lunch happens_on wednesday]
+    expect: [meeting is past, dentist is future, lunch is today, meeting before dentist, dentist after meeting]
+    expect_not: [lunch is past, lunch is future, meeting is future]
+  - id: same_day
+    note: Trap. Two events on the same day are given no order, so neither comes first.
+    facts: [now happens_on friday, gym happens_on friday, party happens_on friday]
+    expect: [gym is today, party is today]
+    expect_not: [gym before party, party before gym, gym is past]
+  - id: during_holiday
+    facts: [holiday before now, swim during holiday, holiday before exam, exam before graduation]
+    expect: [swim is past, swim before exam, swim before graduation, graduation after swim]
+    expect_not: [exam is past, swim is future]
+  - id: ages
+    facts: [alice born_at birth_a, bob born_at birth_b, carol born_at birth_c, birth_a before birth_b, birth_b before birth_c]
+    expect: [alice older_than bob, alice older_than carol, bob older_than carol]
+    expect_not: [carol older_than alice, alice older_than alice]
+  - id: one_week_only
+    note: Trap. The rules know one week from Monday to Sunday, so on a Sunday, Monday is already past, not next week.
+    facts: [now happens_on sunday, payday happens_on monday]
+    expect: [payday is past]
+    expect_not: [payday is future]
+  - id: undated
+    note: An event with no day and no order is neither past nor future; nothing is known about it.
+    facts: [now happens_on tuesday, picnic happens_on thursday]
+    expect: [picnic is future]
+    expect_not: [concert is past, concert is future, concert before picnic]
+  - id: impossible_timeline
+    facts: [breakfast before lunch, lunch before dinner, dinner before breakfast]
+    expect: [breakfast conflicts_with dinner, lunch conflicts_with breakfast, breakfast before breakfast]
+    expect_not: [breakfast is past]

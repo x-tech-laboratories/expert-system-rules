@@ -30,7 +30,10 @@ part; the work is in verifying, scoping and governing them.
 7. **Facts from Wikidata.** Triples already match Wikidata's statements; an importer can bring in
    reference facts for rule sets to reason over, and qualifiers can carry relationships with more
    than two parts.
-8. **An "unknown" answer.** General knowledge is an open world: what is not concluded is often not
+8. **Numbers.** The common-sense rule sets compare and order things without arithmetic. Built-in
+   relations such as `less_than` and `plus` would let rules work with real quantities, dates and
+   unit conversions.
+9. **An "unknown" answer.** General knowledge is an open world: what is not concluded is often not
    false but unknown. A three-valued mode would answer true, false or unknown.
 
 ## Out of scope for now
