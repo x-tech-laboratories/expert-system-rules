@@ -24,7 +24,7 @@
     "import-proofwriter": "node src/cli.ts import-proofwriter"
   },
   "dependencies": {
-    "@x-tech-laboratories/x-libs": "^0.75.0",
+    "@x-tech-laboratories/x-libs": "^0.79.0",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
