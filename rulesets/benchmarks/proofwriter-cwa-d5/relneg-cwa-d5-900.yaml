@@ -1,7 +1,9 @@
 id: relneg-cwa-d5-900
 title: ProofWriter RelNeg-CWA-D5-900
 description: "The bear chases the rabbit. The bear is blue. The cat is kind. The mouse chases the rabbit. The mouse is nice. The mouse is young. The mouse likes the bear. The rabbit chases the mouse. The rabbit is blue. The rabbit likes the cat. If the rabbit is big then the rabbit likes the bear. If someone likes the mouse and the mouse is young then they are kind. If someone likes the rabbit and they are kind then the rabbit likes the mouse. If the mouse chases the cat then the cat is nice. If someone is nice then they like the mouse. If someone likes the mouse and the mouse does not like the cat then they chase the cat. If someone eats the mouse then they are young. If someone eats the mouse and they are kind then they are big. If someone is blue then they eat the rabbit."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

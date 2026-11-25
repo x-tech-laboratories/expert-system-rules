@@ -1,0 +1,38 @@
+# The map of the rule sets: the subject folders under rulesets/ and the tags a rule set may carry.
+# A subject may name the Wikidata item it covers, to link the folder back to Wikidata.
+# `npm run check` refuses a rule set in an unlisted folder or with an unlisted tag, so new ones are added here first.
+
+subjects:
+  animals: { description: Identifying and describing animals., wikidata: Q729 }
+  benchmarks: Rule sets converted from published reasoning benchmarks.
+  commonsense: { description: Everyday knowledge a conversational assistant needs., wikidata: Q332880 }
+  core: The shallow backbone of kinds that other rule sets import.
+  fiction: Made-up worlds, so a model cannot answer from what it already knows.
+  vehicles: { description: Diagnosing and maintaining vehicles., wikidata: Q42889 }
+
+tags:
+  adapted: Adapted from another collection; its license and source say from where.
+  original: Written for this repository.
+  benchmark: Used to measure models rather than to answer questions.
+  proofwriter: Converted from ProofWriter.
+  closed-world: Anything not concluded is false.
+  backbone: Part of the shared tree of kinds.
+  taxonomy: Kinds of things and their subkinds.
+  classification: Tells what something is from its features.
+  diagnosis: Finds a fault from symptoms.
+  commonsense: Everyday knowledge.
+  causation: What makes what happen.
+  emotions: How people feel.
+  people: People and how they treat each other.
+  social-norms: What people are expected to do.
+  physics: How objects move, fall and break.
+  location: Where things are.
+  quantities: Sizes, amounts and units.
+  units: Units of measurement.
+  time: Order and duration of events.
+  routines: The usual steps of everyday activities.
+  scripts: Sequences of events that usually happen together.
+  licensing: The rules license (permit) a conclusion only in narrow conditions.
+  negation: Uses "not" (negation as failure).
+  transitivity: Chains a relation through intermediate steps.
+  trap-cases: Has cases built to catch a reader who guesses instead of following the rules.

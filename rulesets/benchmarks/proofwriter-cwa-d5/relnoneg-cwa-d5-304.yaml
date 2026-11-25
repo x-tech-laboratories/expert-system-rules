@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-304
 title: ProofWriter RelNoneg-CWA-D5-304
 description: "The bear chases the mouse. The bear chases the rabbit. The bear eats the rabbit. The bear sees the rabbit. The cow chases the mouse. The cow chases the rabbit. The cow eats the mouse. The cow is big. The cow is kind. The cow sees the bear. The cow sees the rabbit. The mouse is kind. The rabbit chases the mouse. The rabbit eats the mouse. The rabbit is blue. The rabbit sees the bear. If someone eats the bear then the bear sees the rabbit. If someone sees the rabbit and they eat the bear then they eat the cow. All rough people are young. If someone eats the rabbit then they are rough. If the mouse eats the rabbit and the rabbit eats the cow then the mouse is kind. If someone is young then they eat the bear. If someone is rough and they eat the bear then the bear is kind. If someone is kind and they see the rabbit then they chase the cow."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

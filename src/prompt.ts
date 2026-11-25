@@ -19,7 +19,7 @@ export function questions_of(entry: Case): Question[] {
 // ── Prompt ───────────────────────────────────────────────────────────────────
 
 export function build_prompt(rule_set: RuleSet): string {
-  const relations = [...rule_set.relations].map(([name, meaning]) => `  ${name}: ${meaning}`);
+  const relations = [...rule_set.relations].map(([name, relation]) => `  ${name}: ${relation.meaning}`);
   return [
     `You are given a closed set of facts and rules (${rule_set.title}). Use ONLY these, not real-world knowledge.`,
     `Facts are written "subject relation object". Words starting with ? are variables: a rule applies to every way of filling them in that makes all its conditions true, and then its conclusion is a fact too.`,

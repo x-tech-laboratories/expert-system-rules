@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-1033
 title: ProofWriter RelNoneg-CWA-D5-1033
 description: "The bald eagle visits the dog. The bear likes the rabbit. The bear needs the dog. The bear needs the rabbit. The bear visits the bald eagle. The dog visits the bear. The rabbit likes the bald eagle. All round things are rough. If something visits the bald eagle and the bald eagle likes the bear then the bald eagle likes the dog. If something likes the bald eagle and the bald eagle visits the rabbit then the bald eagle is young. All rough, round things are big. If something likes the dog then the dog likes the bear. If something visits the bear then it is young. If something needs the bald eagle and it needs the rabbit then the rabbit is blue. If something is big then it needs the rabbit. If something visits the dog and the dog is young then the dog is round."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

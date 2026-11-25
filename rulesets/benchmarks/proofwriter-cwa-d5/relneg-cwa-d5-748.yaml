@@ -1,7 +1,9 @@
 id: relneg-cwa-d5-748
 title: ProofWriter RelNeg-CWA-D5-748
 description: "The bear is green. The bear likes the mouse. The bear needs the cow. The bear needs the mouse. The bear sees the cow. The bear sees the mouse. The cow likes the bear. The cow sees the bear. The mouse likes the cow. The mouse sees the rabbit. The rabbit is young. If someone is kind then they need the bear. If someone sees the cow then they are cold. If someone is cold then they like the rabbit. If someone needs the bear then the bear is young. Young people are kind. If someone is round then they like the mouse. If someone likes the bear and they like the mouse then the bear likes the mouse. If someone likes the cow then the cow likes the bear. If someone is round and they do not need the bear then they see the rabbit."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

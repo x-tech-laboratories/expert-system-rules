@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-647
 title: ProofWriter AttNeg-CWA-D5-647
 description: "Bob is furry. Bob is green. Bob is kind. Bob is round. Charlie is red. Charlie is young. Gary is red. Harry is red. Harry is round. Harry is young. Big people are young. All furry people are kind. Red, round people are big. Red people are big. If Charlie is kind and Charlie is furry then Charlie is red. Furry, young people are round. Young people are round. If Gary is round and Gary is red then Gary is furry. If Charlie is not young then Charlie is green."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

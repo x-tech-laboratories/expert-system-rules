@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-67
 title: ProofWriter AttNeg-CWA-D5-67
 description: "Bob is kind. Bob is nice. Bob is quiet. Bob is round. Charlie is cold. Charlie is red. Charlie is round. Fiona is nice. Fiona is quiet. Fiona is round. Fiona is white. Harry is white. If something is cold and quiet then it is white. White things are quiet. Round things are quiet. All kind things are quiet. If something is quiet then it is cold. If something is red then it is round. Round things are nice. If Bob is white and Bob is not kind then Bob is red. Quiet, cold things are red."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

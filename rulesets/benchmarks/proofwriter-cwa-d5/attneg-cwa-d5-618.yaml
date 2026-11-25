@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-618
 title: ProofWriter AttNeg-CWA-D5-618
 description: "Bob is green. Charlie is big. Charlie is blue. Charlie is furry. Charlie is quiet. Charlie is red. Charlie is round. Erin is big. Erin is blue. Erin is furry. Erin is quiet. Erin is red. Erin is round. Harry is quiet. All green people are round. All furry people are green. Red, big people are blue. All furry people are red. All round people are red. If someone is red and blue then they are quiet. If someone is big and furry then they are quiet. If Harry is quiet and Harry is not green then Harry is round. If someone is red and not furry then they are big."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

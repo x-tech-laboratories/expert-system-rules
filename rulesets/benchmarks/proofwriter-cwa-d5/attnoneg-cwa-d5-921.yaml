@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-921
 title: ProofWriter AttNoneg-CWA-D5-921
 description: "Anne is cold. Anne is furry. Anne is nice. Anne is red. Anne is white. Charlie is white. Fiona is cold. Fiona is furry. Fiona is nice. Fiona is red. Harry is big. Harry is furry. Harry is red. Harry is white. If Anne is big and Anne is round then Anne is furry. If something is furry then it is cold. All nice things are round. If Charlie is round then Charlie is big. If something is big and red then it is furry. If Charlie is white then Charlie is nice. If something is big and red then it is furry. All big things are furry. If something is round then it is nice."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

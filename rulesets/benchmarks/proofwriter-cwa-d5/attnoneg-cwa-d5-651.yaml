@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-651
 title: ProofWriter AttNoneg-CWA-D5-651
 description: "Charlie is rough. Erin is nice. Erin is red. Fiona is cold. Fiona is red. Harry is furry. Harry is nice. All furry people are nice. Nice, red people are rough. All nice people are rough. If someone is red and round then they are furry. All big, rough people are round. All red, rough people are big. All cold, furry people are rough. If someone is cold and round then they are red. All furry people are cold."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

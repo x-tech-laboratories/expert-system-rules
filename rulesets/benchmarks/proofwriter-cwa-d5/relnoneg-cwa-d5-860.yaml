@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-860
 title: ProofWriter RelNoneg-CWA-D5-860
 description: "The bear is kind. The bear is red. The cat eats the bear. The cat eats the tiger. The cat is red. The cat likes the cow. The cat likes the tiger. The cat needs the bear. The cat needs the tiger. The cow eats the tiger. The cow is red. The cow needs the tiger. The tiger is cold. The tiger is red. The tiger likes the bear. The tiger needs the bear. If the tiger eats the bear then the bear likes the cow. If something eats the tiger and the tiger is rough then it is rough. If something eats the cow then the cow is rough. If something is kind then it needs the tiger. If something is kind and it eats the bear then it eats the cow. If something needs the bear then the bear is red. If the cow is rough and the cow eats the bear then the cow is cold. If something needs the tiger then it eats the bear."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

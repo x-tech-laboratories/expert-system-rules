@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-376
 title: ProofWriter AttNeg-CWA-D5-376
 description: "Charlie is kind. Dave is blue. Dave is rough. Dave is white. Erin is blue. Erin is cold. Erin is rough. Gary is kind. Gary is round. Gary is white. All blue things are rough. All rough things are cold. If something is kind and round then it is blue. If Charlie is smart and Charlie is kind then Charlie is blue. White, rough things are kind. Cold things are kind. If Gary is smart and Gary is white then Gary is rough. All cold, rough things are white. If something is kind then it is round."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

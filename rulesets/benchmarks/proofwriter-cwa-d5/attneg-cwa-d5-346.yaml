@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-346
 title: ProofWriter AttNeg-CWA-D5-346
 description: "Charlie is cold. Charlie is green. Charlie is round. Charlie is white. Dave is white. Erin is cold. Erin is green. Erin is red. Erin is round. Gary is rough. Gary is young. If Dave is white then Dave is round. If someone is white then they are green. If Erin is not green then Erin is rough. Round, red people are cold. If someone is rough and green then they are young. All green, red people are round. If someone is round and young then they are red. If someone is white and young then they are rough. Round people are rough."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

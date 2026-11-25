@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-192
 title: ProofWriter RelNoneg-CWA-D5-192
 description: "The cat eats the mouse. The cat likes the tiger. The cow eats the tiger. The cow likes the cat. The mouse chases the cat. The mouse chases the cow. The mouse eats the tiger. The mouse is green. The mouse is round. The tiger chases the cat. The tiger eats the cow. The tiger likes the mouse. If someone chases the cow and they chase the mouse then the mouse is blue. If someone eats the cat then they are nice. If the cat eats the mouse then the mouse likes the cow. If someone chases the mouse and they are round then they are big. If someone chases the tiger and the tiger chases the cat then the tiger is round. If someone eats the tiger and they like the cat then the cat likes the cow. If the mouse likes the cow and the mouse chases the cow then the cow eats the cat. If someone eats the cow and they eat the cat then they chase the tiger. If someone eats the tiger and they eat the cat then the tiger eats the cat."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

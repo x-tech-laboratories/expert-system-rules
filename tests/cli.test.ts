@@ -15,6 +15,7 @@ import type { ProgramRunner } from "../src/runner.ts";
 const rule_set_text = `
 id: birds
 title: Birds
+version: 1.0.0
 license: CC-BY-SA-4.0
 source: Test.
 relations:
@@ -64,6 +65,22 @@ describe("run_cli", () => {
     const folder = await project();
 
     expect((await run(["check", join(folder, birds)], "/")).out).toBe("birds: 2 rules, 1 facts, 2/2 cases match the engine\n");
+  });
+
+  it("fails a check that breaks the catalog", async () => {
+    const folder = await project(rule_set_text.replace("source: Test.", "source: Test.\ntags: [birds]"));
+    await writeFile(join(folder, "catalog.yaml"), "subjects: { plants: Plants. }\ntags: { trees: Trees. }");
+
+    expect(await run(["check"], folder)).toEqual({
+      code: 1,
+      out: [
+        "birds: 2 rules, 1 facts, 2/2 cases match the engine",
+        `  the subject folder "animals" is not listed under "subjects" in catalog.yaml`,
+        `  the tag "birds" is not listed under "tags" in catalog.yaml`,
+        "",
+      ].join("\n"),
+      err: "",
+    });
   });
 
   it("fails a check whose written answers disagree with the engine", async () => {

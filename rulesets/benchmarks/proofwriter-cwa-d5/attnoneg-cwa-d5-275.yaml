@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-275
 title: ProofWriter AttNoneg-CWA-D5-275
 description: "Anne is big. Anne is cold. Anne is red. Bob is big. Bob is furry. Bob is red. Bob is rough. Bob is smart. Bob is young. Charlie is cold. Charlie is red. Charlie is smart. Charlie is young. Harry is smart. If Charlie is cold and Charlie is big then Charlie is young. All cold, rough things are furry. All smart things are young. Smart, red things are rough. All furry things are rough. Big things are red. All young things are big. Rough, big things are furry."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

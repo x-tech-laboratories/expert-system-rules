@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-887
 title: ProofWriter RelNoneg-CWA-D5-887
 description: "The dog is big. The dog is young. The lion eats the squirrel. The lion is blue. The lion is young. The lion likes the mouse. The mouse chases the squirrel. The mouse eats the dog. The mouse eats the lion. The mouse is blue. The mouse is nice. The mouse likes the dog. The squirrel chases the dog. The squirrel is blue. If someone likes the dog and the dog chases the mouse then the mouse chases the dog. If someone is young and nice then they like the squirrel. If someone chases the dog then the dog eats the mouse. If someone eats the mouse then the mouse is young. If someone likes the squirrel and they like the dog then the dog chases the mouse. If someone chases the lion and the lion is rough then they are nice. If someone likes the mouse and they chase the mouse then the mouse eats the squirrel."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

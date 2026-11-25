@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-298
 title: ProofWriter AttNeg-CWA-D5-298
 description: "Anne is red. Anne is young. Bob is blue. Bob is young. Dave is blue. Erin is big. Erin is young. If something is red then it is furry. All cold, nice things are red. If something is young then it is red. Blue things are cold. Furry things are cold. If something is young then it is blue. If something is nice then it is blue. If something is blue and cold then it is big. All blue, big things are young."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

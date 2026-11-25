@@ -4,6 +4,7 @@ description: >
   Scripts for common outings: the steps of eating at a restaurant, buying fast food, seeing a doctor
   and catching a train, in their usual order. From the step someone has reached, the rules tell what
   they have already done (unless they skipped it) and what comes next.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, scripts, routines, transitivity, negation, trap-cases, original]
 source: >

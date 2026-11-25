@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { list_rule_set_files, load_rule_set } from "../src/rule_set.ts";
+import { catalog_problems, find_catalog, list_rule_set_files, load_rule_set } from "../src/rule_set.ts";
 import { check_cases, is_correct } from "../src/runner.ts";
 
 // ============================================================================
@@ -20,5 +20,6 @@ describe("shipped rule sets", () => {
 
     expect(check_cases(rule_set).filter(result => !is_correct(result))).toEqual([]);
     expect(rule_set.cases.length).toBeGreaterThan(0);
+    expect(catalog_problems((await find_catalog(file))!, file, rule_set)).toEqual([]);
   });
 });

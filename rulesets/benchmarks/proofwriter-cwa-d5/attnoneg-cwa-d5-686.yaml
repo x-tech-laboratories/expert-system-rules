@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-686
 title: ProofWriter AttNoneg-CWA-D5-686
 description: "Erin is cold. Erin is round. Erin is young. Fiona is smart. Fiona is young. Gary is quiet. Gary is white. Gary is young. Harry is cold. Harry is quiet. If someone is rough then they are cold. Round people are smart. All white, cold people are young. If Fiona is smart and Fiona is quiet then Fiona is rough. If Harry is rough and Harry is young then Harry is round. If someone is cold then they are rough. If someone is rough then they are white."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

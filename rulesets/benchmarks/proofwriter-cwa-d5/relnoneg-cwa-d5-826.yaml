@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-826
 title: ProofWriter RelNoneg-CWA-D5-826
 description: "The dog eats the tiger. The dog is blue. The dog visits the lion. The lion eats the mouse. The lion is rough. The lion is round. The lion visits the tiger. The mouse eats the tiger. The tiger eats the lion. The tiger needs the mouse. The tiger visits the dog. The tiger visits the lion. If someone visits the mouse then they visit the lion. If someone needs the lion then they visit the mouse. If someone visits the tiger then the tiger eats the mouse. If someone eats the mouse and they are blue then they visit the tiger. If someone eats the mouse and the mouse is round then they eat the lion. If someone visits the tiger and the tiger visits the mouse then they visit the dog. If someone is round and they need the lion then the lion is red. If someone visits the lion then the lion visits the mouse. If someone visits the dog then they need the lion."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

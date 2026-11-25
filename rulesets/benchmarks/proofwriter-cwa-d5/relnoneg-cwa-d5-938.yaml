@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-938
 title: ProofWriter RelNoneg-CWA-D5-938
 description: "The bald eagle is green. The bald eagle needs the squirrel. The bald eagle sees the tiger. The bald eagle visits the mouse. The mouse is round. The mouse needs the squirrel. The mouse sees the squirrel. The squirrel is big. The squirrel is round. The squirrel needs the mouse. The squirrel visits the mouse. The squirrel visits the tiger. The tiger is big. The tiger is rough. The tiger needs the squirrel. The tiger visits the squirrel. If something visits the bald eagle and it is round then the bald eagle sees the squirrel. If something sees the tiger and it needs the squirrel then the tiger is round. If something is nice then it visits the bald eagle. If something is round then it sees the squirrel. If something sees the squirrel then it is nice."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

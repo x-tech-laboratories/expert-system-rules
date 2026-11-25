@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-475
 title: ProofWriter AttNeg-CWA-D5-475
 description: "Bob is green. Bob is smart. Bob is young. Dave is smart. Fiona is cold. Gary is cold. Gary is rough. If Dave is smart and Dave is rough then Dave is green. Smart, white things are rough. White, green things are cold. Cold things are white. All young things are white. If Gary is cold then Gary is green. If Fiona is young then Fiona is rough. Rough, young things are green. If something is smart then it is young."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

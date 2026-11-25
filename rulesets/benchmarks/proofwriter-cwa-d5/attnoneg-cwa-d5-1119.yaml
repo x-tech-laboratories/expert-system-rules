@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-1119
 title: ProofWriter AttNoneg-CWA-D5-1119
 description: "Anne is blue. Anne is cold. Anne is furry. Bob is furry. Bob is round. Fiona is blue. Fiona is cold. Fiona is furry. Fiona is kind. Fiona is rough. Fiona is round. Gary is blue. Gary is kind. Gary is rough. Kind things are cold. If something is red then it is kind. All rough things are round. If something is round and kind then it is red. All cold things are rough. If something is round then it is red. Rough, round things are blue. If something is kind then it is furry."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

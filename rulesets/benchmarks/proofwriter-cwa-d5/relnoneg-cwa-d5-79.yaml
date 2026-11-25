@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-79
 title: ProofWriter RelNoneg-CWA-D5-79
 description: "The bald eagle sees the cat. The bald eagle sees the squirrel. The cat is blue. The cat is cold. The cat is green. The cat sees the bald eagle. The cat sees the squirrel. The mouse chases the bald eagle. The mouse chases the cat. The mouse is cold. The mouse sees the cat. The squirrel likes the mouse. The squirrel sees the bald eagle. The squirrel sees the mouse. If something chases the bald eagle then the bald eagle is green. If something is green and it likes the bald eagle then the bald eagle is round. If something chases the cat and the cat is cold then it likes the bald eagle. If something sees the mouse and the mouse sees the cat then the cat sees the bald eagle. If something sees the bald eagle then it is cold. If the bald eagle likes the mouse then the bald eagle chases the cat. If something is green then it likes the mouse."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

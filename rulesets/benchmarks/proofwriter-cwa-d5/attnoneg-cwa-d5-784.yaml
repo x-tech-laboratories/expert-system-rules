@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-784
 title: ProofWriter AttNoneg-CWA-D5-784
 description: "Bob is rough. Bob is round. Bob is smart. Charlie is furry. Fiona is furry. Fiona is quiet. Gary is rough. If Charlie is quiet then Charlie is green. Green, young people are round. If someone is young then they are quiet. All round, green people are smart. If Charlie is furry then Charlie is young. Rough, furry people are green. If someone is quiet and furry then they are rough. If someone is round and young then they are quiet."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

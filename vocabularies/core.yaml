@@ -1,0 +1,22 @@
+id: core
+title: Core vocabulary
+version: 1.0.0
+license: CC-BY-SA-4.0
+source: Original to this repository. Each relation names the Wikidata property it matches, so facts can be exchanged with Wikidata.
+
+# Relations every rule set may share by listing `vocabularies: [core]`. A rule set that uses this vocabulary
+# cannot redefine these names, so `is_a` means the same thing everywhere it is shared.
+relations:
+  is_a: { meaning: The subject is an instance of this kind., wikidata: P31 }
+  subclass_of: { meaning: Every instance of the subject kind is also of this kind., wikidata: P279 }
+  part_of: { meaning: The subject is a part of the object., wikidata: P361 }
+  has_part: { meaning: The object is a part of the subject., wikidata: P527 }
+  located_in: { meaning: The subject is at or inside this place., wikidata: P276 }
+  made_of: { meaning: The subject is made from this material., wikidata: P186 }
+  has_property: { meaning: The subject has this quality or characteristic., wikidata: P1552 }
+  used_for: { meaning: The subject is used to do this., wikidata: P366 }
+  causes: { meaning: The subject brings about the object., wikidata: P1542 }
+  member_of: { meaning: The subject belongs to this group or organization., wikidata: P463 }
+  owned_by: { meaning: The subject belongs to the object., wikidata: P127 }
+  opposite_of: { meaning: The subject is the opposite of the object., wikidata: P461 }
+  different_from: { meaning: "The subject is not the same thing as the object, though they may be confused.", wikidata: P1889 }

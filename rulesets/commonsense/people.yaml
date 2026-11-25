@@ -4,6 +4,7 @@ description: >
   Everyday reasoning about people: needs lead to wants, getting or being denied what you want leads
   to feelings, kindness calls for thanks until it is given, borrowed things are owed back, and a
   young child alone somewhere dangerous needs an adult.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, people, emotions, social-norms, negation, trap-cases, original]
 source: Original to this repository.
