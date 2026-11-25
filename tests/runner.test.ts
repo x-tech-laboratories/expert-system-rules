@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { build_prompt, parse_answer, rules_listing } from "../src/prompt.ts";
-import { parse_rule_set } from "../src/rule_set.ts";
+import { build_prompt, parse_answer, questions_of } from "../src/prompt.ts";
+import { parse_rule_set, parse_triple } from "../src/rule_set.ts";
 import { ask_model, check_cases, score } from "../src/runner.ts";
 
 // ============================================================================
@@ -14,16 +14,18 @@ id: birds
 title: Birds
 license: CC-BY-SA-4.0
 source: Test.
-features:
-  feathers: Feathers?
-  heavy: Heavy?
+relations:
+  has: Has.
+  is: Is.
 rules:
-  - { id: R1, if: [feathers], then: bird }
-  - { id: R2, if: [bird, not heavy], then: flier }
+  - { id: R1, if: [?x has feathers], then: ?x is bird }
+  - { id: R2, if: [?x is bird, not ?x is heavy], then: ?x is flier }
+facts:
+  - rock is heavy
 cases:
-  - { id: sparrow, facts: [feathers], expect: [bird, flier] }
-  - { id: emu, facts: [feathers, heavy], expect: [bird, flier] }
-  - { id: rock, facts: [], expect: [] }
+  - { id: sparrow, facts: [sparrow has feathers], expect: [sparrow is bird, sparrow is flier] }
+  - { id: emu, facts: [emu has feathers, emu is heavy], expect: [emu is bird, emu is flier], expect_not: [emu is heavy] }
+  - { id: rock, expect_not: [rock is bird] }
 `,
   "birds.yaml",
 );
@@ -33,30 +35,38 @@ cases:
 // ============================================================================
 
 describe("build_prompt", () => {
-  it("states every rule, case and conclusion", () => {
+  it("states relations, rules, shared facts, case facts and numbered questions", () => {
     const prompt = build_prompt(rule_set);
 
-    expect(prompt).toContain("R2: IF it is bird AND it is NOT heavy THEN it is flier");
-    expect(prompt).toContain("emu: feathers, heavy");
-    expect(prompt).toContain("rock: (no facts)");
-    expect(prompt).toContain("from this set: bird, flier.");
+    expect(prompt).toContain("  has: Has.");
+    expect(prompt).toContain("R2: IF ?x is bird AND NOT ?x is heavy THEN ?x is flier");
+    expect(prompt).toContain("Facts that hold in every case:\n  rock is heavy");
+    expect(prompt).toContain('  emu: facts: emu has feathers; emu is heavy\n    question 1: does "emu is bird" hold?');
+    expect(prompt).toContain("  rock: facts: (none)");
   });
 
-  it("lists rules compactly", () => {
-    expect(rules_listing(rule_set)).toEqual(["R1: IF feathers THEN bird", "R2: IF bird AND NOT heavy THEN flier"]);
+  it("leaves out empty sections", () => {
+    const bare = { ...rule_set, relations: new Map(), facts: [] };
+
+    expect(build_prompt(bare)).not.toContain("Relations:");
+    expect(build_prompt(bare)).not.toContain("Facts that hold in every case:");
+  });
+
+  it("puts true questions before false ones", () => {
+    expect(questions_of(rule_set.cases[1]).map(question => question.answer)).toEqual([true, true, false]);
   });
 });
 
 describe("parse_answer", () => {
-  it("reads JSON inside prose or a code fence", () => {
-    const answers = parse_answer('Sure:\n```json\n{"sparrow": ["bird"], "rock": "none"}\n```');
+  it("reads JSON inside prose or a code fence, accepting yes and no", () => {
+    const answers = parse_answer('Sure:\n```json\n{"sparrow": [true, "yes", "No", 3], "rock": "none"}\n```');
 
-    expect(answers).toEqual(new Map([["sparrow", ["bird"]], ["rock", []]]));
+    expect(answers).toEqual(new Map([["sparrow", [true, true, false, null]], ["rock", []]]));
   });
 
   it("refuses an answer without a JSON object", () => {
     expect(() => parse_answer("no idea")).toThrow("the answer holds no JSON object");
-    expect(() => parse_answer("{} [1]")).not.toThrow();
+    expect(() => parse_answer("[1] {}")).not.toThrow();
   });
 });
 
@@ -65,23 +75,26 @@ describe("parse_answer", () => {
 // ============================================================================
 
 describe("check_cases", () => {
-  it("names what a case's expect gets wrong", () => {
+  it("names each question whose written answer the engine disagrees with", () => {
     const [sparrow, emu, rock] = check_cases(rule_set);
 
-    expect(sparrow).toEqual({ id: "sparrow", missing: [], extra: [] });
-    expect(emu).toEqual({ id: "emu", missing: [], extra: ["flier"] });
-    expect(rock).toEqual({ id: "rock", missing: [], extra: [] });
+    expect(sparrow.wrong).toEqual([]);
+    expect(emu.wrong).toEqual([
+      { triple: parse_triple("emu is flier"), expected: false, got: true },
+      { triple: parse_triple("emu is heavy"), expected: true, got: false },
+    ]);
+    expect(rock.wrong).toEqual([]);
   });
 });
 
 describe("score", () => {
-  it("counts every conclusion of every case as one cell", () => {
-    const result = score(rule_set, new Map([["sparrow", ["bird"]], ["emu", ["bird", "flier", "dinosaur"]]]));
+  it("counts one point per question and treats a missing answer as wrong", () => {
+    const result = score(rule_set, new Map([["sparrow", [true, false]], ["emu", [true, false, true]]]));
 
-    expect(result.cases[0].missing).toEqual(["flier"]);
-    expect(result.cases[1].extra).toEqual(["dinosaur", "flier"]);
-    expect(result.correct_cells).toBe(4);
-    expect(result.total_cells).toBe(6);
+    expect(result.cases[0].wrong).toEqual([{ triple: parse_triple("sparrow is flier"), expected: true, got: false }]);
+    expect(result.cases[2].wrong).toEqual([{ triple: parse_triple("rock is bird"), expected: false, got: null }]);
+    expect(result.correct).toBe(4);
+    expect(result.total).toBe(6);
   });
 });
 

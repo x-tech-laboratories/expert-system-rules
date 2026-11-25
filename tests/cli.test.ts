@@ -15,20 +15,26 @@ id: birds
 title: Birds
 license: CC-BY-SA-4.0
 source: Test.
-features:
-  feathers: Feathers?
-goals: [bird]
+relations:
+  has: Has.
+  is: Is.
+  in: Inside.
 rules:
-  - { id: R1, if: [feathers], then: bird }
+  - { id: R1, if: [?x has feathers], then: ?x is bird }
+  - { id: R2, if: [?x in ?y, ?y in ?z], then: ?x in ?z }
+facts:
+  - nest in tree
 cases:
-  - { id: sparrow, note: Small., facts: [feathers], expect: [bird] }
-  - { id: rock, facts: [], expect: [] }
+  - { id: sparrow, note: Small., facts: [sparrow has feathers, sparrow in nest], expect: [sparrow is bird] }
+  - { id: rock, expect_not: [rock is bird] }
 `;
 
-async function project(expect_line = "expect: [bird] }"): Promise<string> {
+const birds = "rulesets/animals/birds.yaml";
+
+async function project(text = rule_set_text): Promise<string> {
   const folder = await mkdtemp(join(tmpdir(), "cli-"));
   await mkdir(join(folder, "rulesets", "animals"), { recursive: true });
-  await writeFile(join(folder, "rulesets", "animals", "birds.yaml"), rule_set_text.replace("expect: [bird] }", expect_line));
+  await writeFile(join(folder, birds), text);
   return folder;
 }
 
@@ -42,38 +48,52 @@ async function run(args: string[], cwd: string, runner?: ProgramRunner) {
 const answer = (stdout: string): ProgramRunner => async () => ({ exit_code: 0, stdout, stderr: "" });
 
 // ============================================================================
-// check, explain, rules, prompt
+// check, explain, query, rules, prompt
 // ============================================================================
 
 describe("run_cli", () => {
   it("checks every rule set under rulesets/", async () => {
     const result = await run(["check"], await project());
 
-    expect(result).toEqual({ code: 0, out: "birds: 1 rules, 2/2 cases match the engine\n", err: "" });
+    expect(result).toEqual({ code: 0, out: "birds: 2 rules, 1 facts, 2/2 cases match the engine\n", err: "" });
   });
 
-  it("fails a check whose expect disagrees with the engine", async () => {
-    const result = await run(["check", "rulesets/animals/birds.yaml"], await project("expect: [] }"));
-
-    expect(result.code).toBe(1);
-    expect(result.out).toContain("sparrow: expect lists nothing extra, misses bird");
-  });
-
-  it("explains a case's goals, or named conclusions", async () => {
+  it("takes an absolute path to a rule set anywhere", async () => {
     const folder = await project();
 
-    expect((await run(["explain", "rulesets/animals/birds.yaml", "sparrow"], folder)).out).toBe(
-      "birds / sparrow: feathers\n  Small.\nbird holds by R1: IF feathers THEN bird\n  feathers: given\n",
+    expect((await run(["check", join(folder, birds)], "/")).out).toBe("birds: 2 rules, 1 facts, 2/2 cases match the engine\n");
+  });
+
+  it("fails a check whose written answers disagree with the engine", async () => {
+    const result = await run(["check", birds], await project(rule_set_text.replace("expect_not: [rock is bird]", "expect: [rock is bird]")));
+
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(`  rock: "rock is bird" is false by the engine, the case says true`);
+  });
+
+  it("explains a case's questions, or the triples given", async () => {
+    const folder = await project();
+
+    expect((await run(["explain", birds, "sparrow"], folder)).out).toBe(
+      "birds / sparrow: sparrow has feathers; sparrow in nest\n  Small.\nsparrow is bird holds by R1: IF ?x has feathers THEN ?x is bird\n  sparrow has feathers: given\n",
     );
-    expect((await run(["explain", "rulesets/animals/birds.yaml", "rock", "bird"], folder)).out).toContain("rock: (no facts)\nbird does not hold");
-    expect(await run(["explain", "rulesets/animals/birds.yaml", "moon"], folder)).toMatchObject({ code: 2, err: `birds has no case "moon". Cases: sparrow, rock\n` });
+    expect((await run(["explain", birds, "rock", "rock in tree"], folder)).out).toContain("rock: (no facts)\nrock in tree does not hold");
+    expect(await run(["explain", birds, "moon"], folder)).toMatchObject({ code: 1, err: `birds has no case "moon". Cases: sparrow, rock\n` });
+  });
+
+  it("answers a query with every match", async () => {
+    const folder = await project();
+
+    expect((await run(["query", birds, "sparrow", "sparrow in ?where"], folder)).out).toBe("?where = nest\n?where = tree\n");
+    expect((await run(["query", birds, "sparrow", "sparrow is bird"], folder)).out).toBe("holds\n");
+    expect((await run(["query", birds, "rock", "?x is bird"], folder)).out).toBe("no matches\n");
   });
 
   it("prints the rules and the model prompt", async () => {
     const folder = await project();
 
-    expect((await run(["rules", "rulesets/animals/birds.yaml"], folder)).out).toBe("R1: IF feathers THEN bird\n");
-    expect((await run(["prompt", "rulesets/animals/birds.yaml"], folder)).out).toContain("sparrow: feathers");
+    expect((await run(["rules", birds], folder)).out).toBe("R1: IF ?x has feathers THEN ?x is bird\nR2: IF ?x in ?y AND ?y in ?z THEN ?x in ?z\n");
+    expect((await run(["prompt", birds], folder)).out).toContain("sparrow: facts: sparrow has feathers");
   });
 
   it("prints usage for help and for a wrong command", async () => {
@@ -96,24 +116,30 @@ describe("run_cli", () => {
 
 describe("bench", () => {
   it("scores each run of the model's answer", async () => {
-    const result = await run(["bench", "--runs", "2", "--", "model"], await project(), answer('{"sparrow": [], "rock": []}'));
+    const result = await run(["bench", "--runs", "2", "--", "model"], await project(), answer('{"sparrow": [false], "rock": [false]}'));
 
     expect(result.out).toBe(
       [
-        "birds run 1: 1/2 cells, 1/2 cases fully right",
-        "  sparrow: missing bird; extra none",
-        "birds run 2: 1/2 cells, 1/2 cases fully right",
-        "  sparrow: missing bird; extra none",
-        "total: 2/4 cells",
+        "birds run 1: 1/2 questions, 1/2 cases fully right",
+        `  sparrow: "sparrow is bird" is true by the engine, the model said false`,
+        "birds run 2: 1/2 questions, 1/2 cases fully right",
+        `  sparrow: "sparrow is bird" is true by the engine, the model said false`,
+        "total: 2/4 questions",
         "",
       ].join("\n"),
     );
   });
 
   it("counts an unusable answer as all wrong", async () => {
-    const result = await run(["bench", "rulesets/animals/birds.yaml", "--", "model"], await project(), answer("I think so"));
+    const result = await run(["bench", birds, "--", "model"], await project(), answer("I think so"));
 
-    expect(result.out).toBe("birds run 1: no usable answer (the answer holds no JSON object)\ntotal: 0/2 cells\n");
+    expect(result.out).toBe("birds run 1: no usable answer (the answer holds no JSON object)\ntotal: 0/2 questions\n");
+  });
+
+  it("reports a question left unanswered", async () => {
+    const result = await run(["bench", "--", "model"], await project(), answer('{"sparrow": [true]}'));
+
+    expect(result.out).toContain(`  rock: "rock is bird" is false by the engine, the model said no answer`);
   });
 
   it("needs a command and a sensible run count", async () => {

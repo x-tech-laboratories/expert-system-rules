@@ -1,13 +1,13 @@
-// The command line: check rule sets, explain a case, print a model prompt, and benchmark a model against the engine.
+// The command line: check rule sets, explain or query a case, print a model prompt, and benchmark a model against the engine.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { join } from "node:path";
+import { resolve } from "node:path";
 
-import { explain, infer } from "./engine.ts";
-import { build_prompt, parse_answer, rules_listing } from "./prompt.ts";
-import { list_rule_set_files, load_rule_set, type RuleSet } from "./rule_set.ts";
-import { ask_model, check_cases, is_correct, score, type ProgramRunner } from "./runner.ts";
+import { explain, infer, query } from "./engine.ts";
+import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
+import { is_variable, list_rule_set_files, load_rule_set, parse_triple, rule_text, triple_text, type RuleSet } from "./rule_set.ts";
+import { ask_model, check_cases, is_correct, score, type CaseResult, type ProgramRunner } from "./runner.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
 
@@ -24,8 +24,11 @@ export interface CliContext {
 
 const usage = `Usage:
   expert-system-rules check [file.yaml ...]          validate rule sets and run their cases (default: every file in rulesets/)
-  expert-system-rules explain <file.yaml> <case> [conclusion ...]
-  expert-system-rules rules <file.yaml>              list the rules compactly
+  expert-system-rules explain <file.yaml> <case> ["subject relation object" ...]
+                                                     why each triple holds or not (default: the case's questions)
+  expert-system-rules query <file.yaml> <case> "subject relation ?object"
+                                                     every way of filling in the ?variables
+  expert-system-rules rules <file.yaml>              list the rules
   expert-system-rules prompt <file.yaml>             print the prompt a model is given
   expert-system-rules bench [--runs N] [file.yaml ...] -- <command ...>
                                                      send each rule set's prompt to a command on stdin and score its JSON answer
@@ -34,12 +37,29 @@ const usage = `Usage:
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function rule_set_paths(context: CliContext, given: string[]): Promise<string[]> {
-  if (given.length) return given.map(path => join(context.cwd, path));
-  return list_rule_set_files(join(context.cwd, "rulesets"));
+  if (given.length) return given.map(path => resolve(context.cwd, path));
+  return list_rule_set_files(resolve(context.cwd, "rulesets"));
 }
 
 function line(output: Output, text = ""): void {
   output.write(text + "\n");
+}
+
+function show_answer(answer: boolean | null): string {
+  return answer === null ? "no answer" : String(answer);
+}
+
+function report_wrong(context: CliContext, result: CaseResult, label: string): void {
+  for (const wrong of result.wrong) {
+    line(context.out, `  ${result.id}: "${triple_text(wrong.triple)}" is ${wrong.expected} by the engine, ${label} ${show_answer(wrong.got)}`);
+  }
+}
+
+async function load_case(context: CliContext, path: string, case_id: string) {
+  const rule_set = await load_rule_set(resolve(context.cwd, path));
+  const entry = rule_set.cases.find(item => item.id === case_id);
+  if (!entry) throw new Error(`${rule_set.id} has no case "${case_id}". Cases: ${rule_set.cases.map(item => item.id).join(", ")}`);
+  return { rule_set, entry };
 }
 
 // ── Commands ─────────────────────────────────────────────────────────────────
@@ -50,27 +70,32 @@ async function check(context: CliContext, paths: string[]): Promise<number> {
     const rule_set = await load_rule_set(path);
     const results = check_cases(rule_set);
     const passed = results.filter(is_correct).length;
-    line(context.out, `${rule_set.id}: ${rule_set.rules.length} rules, ${passed}/${results.length} cases match the engine`);
+    line(context.out, `${rule_set.id}: ${rule_set.rules.length} rules, ${rule_set.facts.length} facts, ${passed}/${results.length} cases match the engine`);
     for (const result of results.filter(result => !is_correct(result))) {
       failures++;
-      line(context.out, `  ${result.id}: expect lists ${result.extra.join(", ") || "nothing extra"}, misses ${result.missing.join(", ") || "nothing"}`);
+      report_wrong(context, result, "the case says");
     }
   }
   return failures ? 1 : 0;
 }
 
 async function explain_case(context: CliContext, path: string, case_id: string, wanted: string[]): Promise<number> {
-  const rule_set = await load_rule_set(path);
-  const entry = rule_set.cases.find(item => item.id === case_id);
-  if (!entry) {
-    line(context.err, `${rule_set.id} has no case "${case_id}". Cases: ${rule_set.cases.map(item => item.id).join(", ")}`);
-    return 2;
-  }
+  const { rule_set, entry } = await load_case(context, path, case_id);
   const inference = infer(rule_set, entry.facts);
-  const targets = wanted.length ? wanted : rule_set.goals.length ? rule_set.goals : rule_set.conclusions;
-  line(context.out, `${rule_set.id} / ${entry.id}: ${entry.facts.join(", ") || "(no facts)"}`);
+  const targets = wanted.length ? wanted.map(parse_triple) : questions_of(entry).map(question => question.triple);
+  line(context.out, `${rule_set.id} / ${entry.id}: ${entry.facts.map(triple_text).join("; ") || "(no facts)"}`);
   if (entry.note) line(context.out, `  ${entry.note}`);
   for (const target of targets) line(context.out, explain(rule_set, inference, target).join("\n"));
+  return 0;
+}
+
+async function query_case(context: CliContext, path: string, case_id: string, text: string): Promise<number> {
+  const { rule_set, entry } = await load_case(context, path, case_id);
+  const pattern = parse_triple(text);
+  const found = query(infer(rule_set, entry.facts), pattern);
+  const variables = [pattern.subject, pattern.object].filter(is_variable);
+  if (!found.length) line(context.out, "no matches");
+  for (const bindings of found) line(context.out, variables.length ? variables.map(variable => `${variable} = ${bindings[variable]}`).join(", ") : "holds");
   return 0;
 }
 
@@ -97,26 +122,25 @@ async function bench(context: CliContext, args: string[]): Promise<number> {
   let total = 0;
   for (const path of await rule_set_paths(context, options)) {
     const rule_set: RuleSet = await load_rule_set(path);
+    const questions = rule_set.cases.reduce((sum, entry) => sum + questions_of(entry).length, 0);
     for (let run = 1; run <= runs; run++) {
-      let answers: Map<string, string[]>;
+      let answers;
       try {
         answers = parse_answer(await ask_model(command, build_prompt(rule_set), context.run));
       } catch (error) {
         line(context.out, `${rule_set.id} run ${run}: no usable answer (${(error as Error).message})`);
-        total += rule_set.cases.length * rule_set.conclusions.length;
+        total += questions;
         continue;
       }
       const result = score(rule_set, answers);
-      correct += result.correct_cells;
-      total += result.total_cells;
+      correct += result.correct;
+      total += result.total;
       const right_cases = result.cases.filter(is_correct).length;
-      line(context.out, `${rule_set.id} run ${run}: ${result.correct_cells}/${result.total_cells} cells, ${right_cases}/${result.cases.length} cases fully right`);
-      for (const wrong of result.cases.filter(item => !is_correct(item))) {
-        line(context.out, `  ${wrong.id}: missing ${wrong.missing.join(", ") || "none"}; extra ${wrong.extra.join(", ") || "none"}`);
-      }
+      line(context.out, `${rule_set.id} run ${run}: ${result.correct}/${result.total} questions, ${right_cases}/${result.cases.length} cases fully right`);
+      for (const wrong of result.cases.filter(item => !is_correct(item))) report_wrong(context, wrong, "the model said");
     }
   }
-  line(context.out, `total: ${correct}/${total} cells`);
+  line(context.out, `total: ${correct}/${total} questions`);
   return 0;
 }
 
@@ -130,14 +154,17 @@ export async function run_cli(args: string[], context: CliContext): Promise<numb
         return await check(context, await rule_set_paths(context, rest));
       case "explain":
         if (rest.length < 2) break;
-        return await explain_case(context, join(context.cwd, rest[0]), rest[1], rest.slice(2));
+        return await explain_case(context, rest[0], rest[1], rest.slice(2));
+      case "query":
+        if (rest.length !== 3) break;
+        return await query_case(context, rest[0], rest[1], rest[2]);
       case "prompt":
         if (rest.length !== 1) break;
-        line(context.out, build_prompt(await load_rule_set(join(context.cwd, rest[0]))));
+        line(context.out, build_prompt(await load_rule_set(resolve(context.cwd, rest[0]))));
         return 0;
       case "rules":
         if (rest.length !== 1) break;
-        line(context.out, rules_listing(await load_rule_set(join(context.cwd, rest[0]))).join("\n"));
+        line(context.out, (await load_rule_set(resolve(context.cwd, rest[0]))).rules.map(rule_text).join("\n"));
         return 0;
       case "bench":
         return await bench(context, rest);

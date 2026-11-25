@@ -1,0 +1,65 @@
+id: kitchen
+title: Kitchen common sense
+description: >
+  Everyday reasoning about kinds of food and where things are: a kind of a kind is still a kind,
+  something inside something inside a room is in that room, cold places keep things cold, and
+  perishable food left somewhere warm is at risk of spoiling.
+license: CC-BY-SA-4.0
+tags: [commonsense, taxonomy, location, negation, original]
+source: Original to this repository.
+
+relations:
+  is_a: The subject is an instance of this kind.
+  subclass_of: Every instance of the subject kind is also of this kind.
+  stored_in: The subject is put directly inside this container or place.
+  "on": The subject rests directly on top of this.
+  in: The subject is somewhere inside this, directly or through other containers.
+  is: The subject has this property.
+
+rules:
+  - { id: K1, if: [?x is_a ?kind, ?kind subclass_of ?wider], then: ?x is_a ?wider }
+  - { id: K2, if: [?x stored_in ?place], then: ?x in ?place }
+  - { id: K3, if: [?x on ?surface, ?surface in ?room], then: ?x in ?room }
+  - { id: K4, if: [?x in ?inner, ?inner in ?outer], then: ?x in ?outer }
+  - { id: K5, if: [?p is_a refrigerator], then: ?p is cold }
+  - { id: K6, if: [?x stored_in ?p, ?p is cold], then: ?x is cold }
+  - { id: K7, if: [?x is_a perishable, ?x stored_in ?p, not ?p is cold], then: ?x is at_risk_of_spoiling }
+  - { id: K8, if: [?x is_a perishable, ?x on ?surface, not ?surface is cold], then: ?x is at_risk_of_spoiling }
+
+facts:
+  - milk is_a dairy
+  - cheese is_a dairy
+  - dairy subclass_of perishable
+  - perishable subclass_of food
+  - bread is_a baked_good
+  - baked_good subclass_of food
+  - fridge is_a refrigerator
+  - refrigerator subclass_of appliance
+  - fridge in kitchen
+  - counter in kitchen
+  - kitchen in house
+
+cases:
+  - id: milk_in_fridge
+    facts: [milk stored_in fridge]
+    expect: [milk in kitchen, milk in house, milk is cold, milk is_a food, fridge is_a appliance]
+    expect_not: [milk is at_risk_of_spoiling]
+  - id: milk_on_counter
+    facts: [milk on counter]
+    expect: [milk in kitchen, milk in house, milk is at_risk_of_spoiling]
+    expect_not: [milk is cold]
+  - id: bread_on_counter
+    note: Bread is food here, but nothing makes it perishable, so it is not at risk.
+    facts: [bread on counter]
+    expect: [bread in house, bread is_a food]
+    expect_not: [bread is at_risk_of_spoiling, bread is_a perishable]
+  - id: cooler_on_counter
+    note: Trap. The cheese is in a cold cooler that sits on the warm counter; only its own container counts.
+    facts: [cooler is cold, cooler on counter, cheese stored_in cooler]
+    expect: [cheese in cooler, cheese in kitchen, cheese is cold, cooler in house]
+    expect_not: [cheese is at_risk_of_spoiling, cooler is_a refrigerator]
+  - id: shed_fridge
+    note: A fridge outside the house is still a fridge and still cold, but nothing puts the milk in the house.
+    facts: [garage_fridge is_a refrigerator, garage_fridge in garage, milk stored_in garage_fridge]
+    expect: [milk is cold, milk in garage]
+    expect_not: [milk in house, milk is at_risk_of_spoiling]
