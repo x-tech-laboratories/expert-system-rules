@@ -16,6 +16,7 @@
     "lint": "oxlint",
     "check": "node src/cli.ts check",
     "explain": "node src/cli.ts explain",
+    "query": "node src/cli.ts query",
     "prompt": "node src/cli.ts prompt",
     "bench": "node src/cli.ts bench"
   },

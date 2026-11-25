@@ -7,64 +7,70 @@ license: CC-BY-SA-4.0
 tags: [diagnosis, negation, trap-cases, original]
 source: Original to this repository.
 
-features:
-  cranks: Does the engine turn over when you turn the key?
-  lights_dim: Are the dashboard lights dim or off?
-  clicking: Do you hear clicking when you turn the key?
-  fuel_gauge_empty: Does the fuel gauge read empty?
-  smells_of_fuel: Is there a strong smell of fuel?
-  battery_old: Is the battery more than five years old?
-  cold_weather: Is it very cold?
-  starts_then_dies: Does it start and then stall straight away?
-
-goals: [needs_jump_start, needs_fuel, wait_and_retry, call_mechanic]
+relations:
+  shows: The car shows this symptom when you try to start it.
+  is: The car is in this condition or setting.
+  has: The car has this fault or part condition.
+  needs: The next step for the car.
 
 rules:
-  - { id: C1, if: [not cranks, lights_dim], then: weak_battery }
-  - { id: C2, if: [not cranks, battery_old, cold_weather], then: weak_battery }
-  - { id: C3, if: [not cranks, clicking, not weak_battery], then: starter_fault }
-  - { id: C4, if: [cranks, fuel_gauge_empty], then: out_of_fuel }
-  - { id: C5, if: [starts_then_dies, fuel_gauge_empty], then: out_of_fuel }
-  - { id: C6, if: [cranks, smells_of_fuel, not out_of_fuel], then: flooded }
-  - { id: C7, if: [cranks, not out_of_fuel, not flooded], then: ignition_fault }
-  - { id: C8, if: [starts_then_dies, not out_of_fuel], then: fuel_delivery_fault }
-  - { id: C9, if: [not cranks, not weak_battery, not starter_fault], then: unknown_electrical_fault }
-  - { id: C10, if: [weak_battery], then: needs_jump_start }
-  - { id: C11, if: [out_of_fuel], then: needs_fuel }
-  - { id: C12, if: [flooded], then: wait_and_retry }
-  - { id: C13, if: [starter_fault], then: call_mechanic }
-  - { id: C14, if: [ignition_fault], then: call_mechanic }
-  - { id: C15, if: [fuel_delivery_fault], then: call_mechanic }
-  - { id: C16, if: [unknown_electrical_fault], then: call_mechanic }
+  - { id: C1, if: [?c is vehicle, not ?c shows cranking, ?c shows dim_lights], then: ?c has weak_battery }
+  - { id: C2, if: [?c is vehicle, not ?c shows cranking, ?c has old_battery, ?c is cold], then: ?c has weak_battery }
+  - { id: C3, if: [?c is vehicle, not ?c shows cranking, ?c shows clicking, not ?c has weak_battery], then: ?c has starter_fault }
+  - { id: C4, if: [?c shows cranking, ?c shows empty_fuel_gauge], then: ?c is out_of_fuel }
+  - { id: C5, if: [?c shows stalling, ?c shows empty_fuel_gauge], then: ?c is out_of_fuel }
+  - { id: C6, if: [?c shows cranking, ?c shows fuel_smell, not ?c is out_of_fuel], then: ?c is flooded }
+  - { id: C7, if: [?c shows cranking, not ?c is out_of_fuel, not ?c is flooded], then: ?c has ignition_fault }
+  - { id: C8, if: [?c shows stalling, not ?c is out_of_fuel], then: ?c has fuel_delivery_fault }
+  - { id: C9, if: [?c is vehicle, not ?c shows cranking, not ?c has weak_battery, not ?c has starter_fault], then: ?c has unknown_electrical_fault }
+  - { id: C10, if: [?c has weak_battery], then: ?c needs jump_start }
+  - { id: C11, if: [?c is out_of_fuel], then: ?c needs fuel }
+  - { id: C12, if: [?c is flooded], then: ?c needs wait_and_retry }
+  - { id: C13, if: [?c has starter_fault], then: ?c needs mechanic }
+  - { id: C14, if: [?c has ignition_fault], then: ?c needs mechanic }
+  - { id: C15, if: [?c has fuel_delivery_fault], then: ?c needs mechanic }
+  - { id: C16, if: [?c has unknown_electrical_fault], then: ?c needs mechanic }
+
+facts:
+  - car is vehicle
 
 cases:
   - id: dead_battery
-    facts: [lights_dim]
-    expect: [needs_jump_start, weak_battery]
+    facts: [car shows dim_lights]
+    expect: [car has weak_battery, car needs jump_start]
+    expect_not: [car needs mechanic]
   - id: cold_morning
     note: Lights look fine, but an old battery in the cold still counts as weak, which rules out the starter.
-    facts: [battery_old, cold_weather, clicking]
-    expect: [needs_jump_start, weak_battery]
+    facts: [car has old_battery, car is cold, car shows clicking]
+    expect: [car has weak_battery, car needs jump_start]
+    expect_not: [car has starter_fault, car needs mechanic]
   - id: clicking_starter
-    facts: [clicking]
-    expect: [call_mechanic, starter_fault]
+    facts: [car shows clicking]
+    expect: [car has starter_fault, car needs mechanic]
+    expect_not: [car needs jump_start]
   - id: empty_tank
-    facts: [cranks, fuel_gauge_empty]
-    expect: [needs_fuel, out_of_fuel]
+    facts: [car shows cranking, car shows empty_fuel_gauge]
+    expect: [car is out_of_fuel, car needs fuel]
+    expect_not: [car has ignition_fault, car needs mechanic]
   - id: flooded_engine
-    facts: [cranks, smells_of_fuel]
-    expect: [flooded, wait_and_retry]
+    facts: [car shows cranking, car shows fuel_smell]
+    expect: [car is flooded, car needs wait_and_retry]
+    expect_not: [car has ignition_fault]
   - id: fuel_smell_but_empty
     note: Trap. An empty tank rules out flooding even with a fuel smell.
-    facts: [cranks, smells_of_fuel, fuel_gauge_empty]
-    expect: [needs_fuel, out_of_fuel]
+    facts: [car shows cranking, car shows fuel_smell, car shows empty_fuel_gauge]
+    expect: [car is out_of_fuel, car needs fuel]
+    expect_not: [car is flooded, car needs wait_and_retry]
   - id: cranks_no_start
-    facts: [cranks]
-    expect: [call_mechanic, ignition_fault]
+    facts: [car shows cranking]
+    expect: [car has ignition_fault, car needs mechanic]
+    expect_not: [car needs fuel]
   - id: stalls
-    facts: [cranks, starts_then_dies]
-    expect: [call_mechanic, fuel_delivery_fault, ignition_fault]
+    facts: [car shows cranking, car shows stalling]
+    expect: [car has fuel_delivery_fault, car has ignition_fault, car needs mechanic]
+    expect_not: [car is out_of_fuel]
   - id: silent
     note: Nothing at all happens and nothing explains it.
     facts: []
-    expect: [call_mechanic, unknown_electrical_fault]
+    expect: [car has unknown_electrical_fault, car needs mechanic]
+    expect_not: [car has weak_battery, car has starter_fault]

@@ -6,8 +6,9 @@ part; the work is in verifying, scoping and governing them.
 
 ## Where it stands
 
-- One YAML format, a layered engine with explanations, and a checker that refuses unknown names and
-  conclusions that depend on their own negation.
+- One YAML format of facts as `subject relation object` triples and rules that join them through
+  `?variables`, a layered engine with explanations and queries, and a checker that refuses unknown
+  names, unbound variables and conclusions that depend on their own negation.
 - Every rule set carries test cases, and CI fails when a case disagrees with the engine.
 - A runner that scores any command-line model against the engine.
 
@@ -26,6 +27,11 @@ part; the work is in verifying, scoping and governing them.
    `not`. A `certainty` or `default` marker may follow if real rule sets need it.
 6. **More collections.** Converters for the sources in [sources.md](sources.md), starting with a
    ProofWriter subset, since it brings correct answers to score models against.
+7. **Facts from Wikidata.** Triples already match Wikidata's statements; an importer can bring in
+   reference facts for rule sets to reason over, and qualifiers can carry relationships with more
+   than two parts.
+8. **An "unknown" answer.** General knowledge is an open world: what is not concluded is often not
+   false but unknown. A three-valued mode would answer true, false or unknown.
 
 ## Out of scope for now
 

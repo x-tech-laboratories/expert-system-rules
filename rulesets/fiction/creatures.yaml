@@ -7,67 +7,75 @@ license: CC-BY-SA-4.0
 tags: [licensing, negation, trap-cases, original]
 source: Original to this repository.
 
-features:
-  has_feathers: Does it have feathers?
-  has_scales: Does it have scales?
-  has_gills: Does it have gills?
-  lays_eggs: Does it lay eggs?
-  heavy: Is it heavy?
-  nocturnal: Is it nocturnal?
-  venomous: Is it venomous?
-
-goals: [exportable, quarantined, protected, harvestable]
+relations:
+  has: The creature has this body part or covering.
+  lays: The creature lays this.
+  is: The creature has this property or belongs to this class.
 
 rules:
-  - { id: R1, if: [has_feathers], then: bird }
-  - { id: R2, if: [lays_eggs, has_scales], then: reptile }
-  - { id: R3, if: [bird, heavy], then: grounded }
-  - { id: R4, if: [has_gills], then: aquatic }
-  - { id: R5, if: [aquatic, lays_eggs], then: spawner }
-  - { id: R6, if: [bird, not grounded], then: flier }
-  - { id: R7, if: [flier, nocturnal], then: glimmerwing }
-  - { id: R8, if: [reptile, aquatic], then: drakeling }
-  - { id: R9, if: [spawner, not bird, not reptile], then: murkling }
-  - { id: R10, if: [grounded, not aquatic], then: strider }
-  - { id: R11, if: [glimmerwing], then: protected }
-  - { id: R12, if: [drakeling], then: protected }
-  - { id: R13, if: [murkling, not protected], then: harvestable }
-  - { id: R14, if: [protected, venomous], then: quarantined }
-  - { id: R15, if: [harvestable, venomous], then: quarantined }
-  - { id: R16, if: [flier, not quarantined], then: exportable }
-  - { id: R17, if: [strider, not quarantined], then: exportable }
+  - { id: R1, if: [?x has feathers], then: ?x is bird }
+  - { id: R2, if: [?x lays eggs, ?x has scales], then: ?x is reptile }
+  - { id: R3, if: [?x is bird, ?x is heavy], then: ?x is grounded }
+  - { id: R4, if: [?x has gills], then: ?x is aquatic }
+  - { id: R5, if: [?x is aquatic, ?x lays eggs], then: ?x is spawner }
+  - { id: R6, if: [?x is bird, not ?x is grounded], then: ?x is flier }
+  - { id: R7, if: [?x is flier, ?x is nocturnal], then: ?x is glimmerwing }
+  - { id: R8, if: [?x is reptile, ?x is aquatic], then: ?x is drakeling }
+  - { id: R9, if: [?x is spawner, not ?x is bird, not ?x is reptile], then: ?x is murkling }
+  - { id: R10, if: [?x is grounded, not ?x is aquatic], then: ?x is strider }
+  - { id: R11, if: [?x is glimmerwing], then: ?x is protected }
+  - { id: R12, if: [?x is drakeling], then: ?x is protected }
+  - { id: R13, if: [?x is murkling, not ?x is protected], then: ?x is harvestable }
+  - { id: R14, if: [?x is protected, ?x is venomous], then: ?x is quarantined }
+  - { id: R15, if: [?x is harvestable, ?x is venomous], then: ?x is quarantined }
+  - { id: R16, if: [?x is flier, not ?x is quarantined], then: ?x is exportable }
+  - { id: R17, if: [?x is strider, not ?x is quarantined], then: ?x is exportable }
 
 cases:
   - id: penguin
     note: Trap. Nothing says it is heavy, so under these rules it flies and can be exported.
-    facts: [has_feathers, lays_eggs]
-    expect: [bird, flier, exportable]
+    facts: [penguin has feathers, penguin lays eggs]
+    expect: [penguin is bird, penguin is flier, penguin is exportable]
+    expect_not: [penguin is grounded, penguin is quarantined, penguin is protected]
   - id: c2
-    facts: [has_feathers, nocturnal, venomous]
-    expect: [bird, flier, glimmerwing, protected, quarantined]
+    facts: [c2 has feathers, c2 is nocturnal, c2 is venomous]
+    expect: [c2 is bird, c2 is flier, c2 is glimmerwing, c2 is protected, c2 is quarantined]
+    expect_not: [c2 is exportable, c2 is harvestable]
   - id: c3
-    facts: [has_gills, lays_eggs, has_scales]
-    expect: [aquatic, drakeling, protected, reptile, spawner]
+    facts: [c3 has gills, c3 lays eggs, c3 has scales]
+    expect: [c3 is aquatic, c3 is drakeling, c3 is protected, c3 is reptile, c3 is spawner]
+    expect_not: [c3 is murkling, c3 is harvestable, c3 is quarantined, c3 is exportable]
   - id: c4
-    facts: [has_gills, lays_eggs, venomous]
-    expect: [aquatic, harvestable, murkling, quarantined, spawner]
+    facts: [c4 has gills, c4 lays eggs, c4 is venomous]
+    expect: [c4 is aquatic, c4 is harvestable, c4 is murkling, c4 is quarantined, c4 is spawner]
+    expect_not: [c4 is protected, c4 is exportable]
   - id: c5
-    facts: [has_feathers, heavy, has_gills]
-    expect: [aquatic, bird, grounded]
+    facts: [c5 has feathers, c5 is heavy, c5 has gills]
+    expect: [c5 is aquatic, c5 is bird, c5 is grounded]
+    expect_not: [c5 is flier, c5 is strider, c5 is spawner, c5 is exportable]
   - id: c6
     note: Trap. Venomous, but neither protected nor harvestable, so not quarantined.
-    facts: [has_feathers, heavy, venomous]
-    expect: [bird, exportable, grounded, strider]
+    facts: [c6 has feathers, c6 is heavy, c6 is venomous]
+    expect: [c6 is bird, c6 is exportable, c6 is grounded, c6 is strider]
+    expect_not: [c6 is quarantined, c6 is flier]
   - id: c7
-    facts: [has_feathers, has_gills, lays_eggs, nocturnal]
-    expect: [aquatic, bird, exportable, flier, glimmerwing, protected, spawner]
+    facts: [c7 has feathers, c7 has gills, c7 lays eggs, c7 is nocturnal]
+    expect: [c7 is aquatic, c7 is bird, c7 is exportable, c7 is flier, c7 is glimmerwing, c7 is protected, c7 is spawner]
+    expect_not: [c7 is murkling, c7 is quarantined]
   - id: bat
     note: Trap. No feathers, so under these rules it is nothing at all.
-    facts: [nocturnal, venomous]
-    expect: []
+    facts: [bat is nocturnal, bat is venomous]
+    expect_not: [bat is bird, bat is flier, bat is exportable, bat is quarantined]
   - id: sea_snake
-    facts: [has_scales, has_gills, lays_eggs, venomous]
-    expect: [aquatic, drakeling, protected, quarantined, reptile, spawner]
+    facts: [sea_snake has scales, sea_snake has gills, sea_snake lays eggs, sea_snake is venomous]
+    expect: [sea_snake is aquatic, sea_snake is drakeling, sea_snake is protected, sea_snake is quarantined, sea_snake is reptile, sea_snake is spawner]
+    expect_not: [sea_snake is murkling, sea_snake is exportable]
   - id: c10
-    facts: [has_gills, lays_eggs, nocturnal, heavy]
-    expect: [aquatic, harvestable, murkling, spawner]
+    facts: [c10 has gills, c10 lays eggs, c10 is nocturnal, c10 is heavy]
+    expect: [c10 is aquatic, c10 is harvestable, c10 is murkling, c10 is spawner]
+    expect_not: [c10 is quarantined, c10 is grounded, c10 is exportable]
+  - id: two_creatures
+    note: Two creatures in one case; each is judged on its own facts.
+    facts: [heron has feathers, eel has gills, eel lays eggs]
+    expect: [heron is exportable, eel is murkling, eel is harvestable]
+    expect_not: [heron is aquatic, eel is exportable]

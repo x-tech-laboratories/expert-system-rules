@@ -1,55 +1,66 @@
-// Checks a rule set's cases against the engine, and scores an AI model's answers against the engine cell by cell.
+// Checks a rule set's cases against the engine, and scores an AI model's true/false answers against the engine question by question.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { run_program, type ProgramOptions, type ProgramResult } from "@x-tech-laboratories/x-libs/agent/programs";
 
-import { conclusions_for } from "./engine.ts";
-import type { RuleSet } from "./rule_set.ts";
+import { holds, infer } from "./engine.ts";
+import { questions_of } from "./prompt.ts";
+import type { RuleSet, Triple } from "./rule_set.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
 
+export interface WrongAnswer {
+  triple: Triple;
+  expected: boolean;
+  got: boolean | null;
+}
+
 export interface CaseResult {
   id: string;
-  missing: string[];
-  extra: string[];
+  wrong: WrongAnswer[];
 }
 
 export interface Score {
   cases: CaseResult[];
-  correct_cells: number;
-  total_cells: number;
+  correct: number;
+  total: number;
 }
 
 export type ProgramRunner = (argv: readonly string[], options: ProgramOptions) => Promise<ProgramResult>;
 
 // ── Comparing ────────────────────────────────────────────────────────────────
 
-function compare(id: string, expected: string[], got: Iterable<string>): CaseResult {
-  const got_set = new Set(got);
-  return {
-    id,
-    missing: expected.filter(fact => !got_set.has(fact)),
-    extra: [...got_set].filter(fact => !expected.includes(fact)).sort(),
-  };
-}
-
 export function is_correct(result: CaseResult): boolean {
-  return result.missing.length === 0 && result.extra.length === 0;
+  return result.wrong.length === 0;
 }
 
-// Compares each case's written "expect" with what the engine concludes.
+// Compares each case's written expect and expect_not (got) with what the engine concludes (expected).
 export function check_cases(rule_set: RuleSet): CaseResult[] {
-  return rule_set.cases.map(entry => compare(entry.id, conclusions_for(rule_set, entry.facts), entry.expect));
+  return rule_set.cases.map(entry => {
+    const inference = infer(rule_set, entry.facts);
+    const wrong = questions_of(entry)
+      .map(question => ({ triple: question.triple, expected: holds(inference, question.triple), got: question.answer }))
+      .filter(answer => answer.got !== answer.expected);
+    return { id: entry.id, wrong };
+  });
 }
 
-// Scores answers per case against the engine; every conclusion of every case is one cell, right or wrong.
-export function score(rule_set: RuleSet, answers: Map<string, string[]>): Score {
-  const cases = rule_set.cases.map(entry => compare(entry.id, conclusions_for(rule_set, entry.facts), answers.get(entry.id) ?? []));
-  const total_cells = rule_set.cases.length * rule_set.conclusions.length;
-  const known = new Set(rule_set.conclusions);
-  const wrong = cases.reduce((sum, result) => sum + result.missing.length + result.extra.filter(fact => known.has(fact)).length, 0);
-  return { cases, correct_cells: total_cells - wrong, total_cells };
+// Scores a model's answers against the engine, one point per question.
+export function score(rule_set: RuleSet, answers: Map<string, (boolean | null)[]>): Score {
+  let total = 0;
+  const cases = rule_set.cases.map(entry => {
+    const inference = infer(rule_set, entry.facts);
+    const given = answers.get(entry.id) ?? [];
+    const questions = questions_of(entry);
+    total += questions.length;
+    const wrong = questions
+      .map((question, index) => ({ triple: question.triple, expected: holds(inference, question.triple), got: given[index] ?? null }))
+      .filter(answer => answer.got !== answer.expected);
+    return { id: entry.id, wrong };
+  });
+  const missed = cases.reduce((sum, result) => sum + result.wrong.length, 0);
+  return { cases, correct: total - missed, total };
 }
 
 // ── Asking a model ───────────────────────────────────────────────────────────

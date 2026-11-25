@@ -13,13 +13,17 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | Rule set | Folder | Rules | Cases | Kind |
 | --- | --- | --- | --- | --- |
 | [Animal identification](rulesets/animals/animal-identification.yaml) | animals | 15 | 11 | classification, adapted from a textbook example |
-| [Creature licensing](rulesets/fiction/creatures.yaml) | fiction | 17 | 10 | fictional licensing, built to catch real-world priors |
+| [Kitchen common sense](rulesets/commonsense/kitchen.yaml) | commonsense | 8 | 5 | kinds of food, where things are, what spoils |
+| [Creature licensing](rulesets/fiction/creatures.yaml) | fiction | 17 | 11 | fictional licensing, built to catch real-world priors |
 | [Car won't start](rulesets/vehicles/car-wont-start.yaml) | vehicles | 16 | 9 | diagnosis |
 
-One file holds one rule set: its features, rules and cases belong together, since a negated
+Facts are triples, `subject relation object`, the same shape as a Wikidata statement, and rules
+join them through `?variables`, so a rule set can describe many things and how they relate. One
+file holds one rule set: its relations, facts, rules and cases belong together, since a `not`
 condition reads the whole set. Files sit in a folder per subject, and `tags` in each file mark the
-other ways to slice them. The format is described in [docs/format.md](docs/format.md), and larger
-collections elsewhere are listed in [docs/sources.md](docs/sources.md), and where the project is going in [docs/roadmap.md](docs/roadmap.md).
+other ways to slice them. The format is described in [docs/format.md](docs/format.md), larger
+collections elsewhere are listed in [docs/sources.md](docs/sources.md), and where the project is
+going is in [docs/roadmap.md](docs/roadmap.md).
 
 A small example:
 
@@ -29,15 +33,19 @@ title: Birds
 license: CC-BY-SA-4.0
 source: Original to this repository.
 tags: [classification]
-features:
-  feathers: Does it have feathers?
-  heavy: Is it heavy?
-goals: [flier]
+relations:
+  is_a: The subject is an instance of this kind.
+  subclass_of: Every instance of the subject kind is also of this kind.
+  is: The subject has this property.
 rules:
-  - { id: R1, if: [feathers], then: bird }
-  - { id: R2, if: [bird, not heavy], then: flier }
+  - { id: R1, if: [?x is_a ?kind, ?kind subclass_of ?wider], then: ?x is_a ?wider }
+  - { id: R2, if: [?x is_a bird, not ?x is heavy], then: ?x is flier }
+facts:
+  - penguin subclass_of bird
 cases:
-  - { id: sparrow, facts: [feathers], expect: [bird, flier] }
+  - id: pingu
+    facts: [pingu is_a penguin]
+    expect: [pingu is_a bird, pingu is flier]
 ```
 
 ## Using it
@@ -47,19 +55,20 @@ Node 24 or newer.
 ```sh
 npm install
 npm run check                                     # validate every rule set and run its cases
-npm run explain -- rulesets/fiction/creatures.yaml penguin exportable
+npm run explain -- rulesets/fiction/creatures.yaml penguin "penguin is exportable"
+npm run query -- rulesets/commonsense/kitchen.yaml cooler_on_counter "cheese in ?where"
 npm run prompt -- rulesets/fiction/creatures.yaml # the prompt a model is given
 npm run bench -- --runs 3 -- claude -p --model haiku
 ```
 
 `bench` sends each rule set's prompt to any command on its standard input and reads a JSON answer
 from its output, so it works with any model that has a command line, such as `claude -p`,
-`llm`, or `ollama run <model>`. Every conclusion of every case is one cell, right or wrong.
+`llm`, or `ollama run <model>`. Each case's questions are true/false, one point each.
 
 ## Contributing a rule set
 
-Add a YAML file under the subject's folder in `rulesets/`, with test cases whose `expect` lists
-every conclusion that holds, and run `npm run check`. The tests fail if a rule set does not load or
+Add a YAML file under the subject's folder in `rulesets/`, with test cases that list what must
+hold under `expect` and what must not under `expect_not`, and run `npm run check`. The tests fail if a rule set does not load or
 a case disagrees with the engine. Say in `source` where the rules come from, and in `license` what
 they are licensed under.
 

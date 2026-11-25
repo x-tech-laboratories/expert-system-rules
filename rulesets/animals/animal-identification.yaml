@@ -11,81 +11,78 @@ source: >
   Written for this repository after the ZOOKEEPER rules in Patrick H. Winston,
   "Artificial Intelligence" (Addison-Wesley), a widely reproduced teaching example.
 
-features:
-  has_hair: Does it have hair?
-  gives_milk: Does it give milk?
-  has_feathers: Does it have feathers?
-  flies: Does it fly?
-  lays_eggs: Does it lay eggs?
-  eats_meat: Does it eat meat?
-  pointed_teeth: Does it have pointed teeth?
-  claws: Does it have claws?
-  forward_eyes: Do its eyes point forward?
-  hooves: Does it have hooves?
-  chews_cud: Does it chew cud?
-  tawny: Is it tawny-coloured?
-  dark_spots: Does it have dark spots?
-  black_stripes: Does it have black stripes?
-  long_neck: Does it have a long neck?
-  long_legs: Does it have long legs?
-  swims: Does it swim?
-  black_and_white: Is it black and white?
-  good_flier: Is it a strong flier?
-
-goals: [cheetah, tiger, giraffe, zebra, ostrich, penguin, albatross]
+relations:
+  has: The animal has this body part, covering or marking.
+  gives: The animal produces this for its young.
+  lays: The animal lays this.
+  eats: The animal eats this.
+  chews: The animal chews this.
+  can: The animal is able to do this.
+  is: The animal has this property or belongs to this class.
 
 rules:
-  - { id: Z1, if: [has_hair], then: mammal }
-  - { id: Z2, if: [gives_milk], then: mammal }
-  - { id: Z3, if: [has_feathers], then: bird }
-  - { id: Z4, if: [flies, lays_eggs], then: bird }
-  - { id: Z5, if: [mammal, eats_meat], then: carnivore }
-  - { id: Z6, if: [mammal, pointed_teeth, claws, forward_eyes], then: carnivore }
-  - { id: Z7, if: [mammal, hooves], then: ungulate }
-  - { id: Z8, if: [mammal, chews_cud], then: ungulate }
-  - { id: Z9, if: [carnivore, tawny, dark_spots], then: cheetah }
-  - { id: Z10, if: [carnivore, tawny, black_stripes], then: tiger }
-  - { id: Z11, if: [ungulate, long_neck, long_legs, dark_spots], then: giraffe }
-  - { id: Z12, if: [ungulate, black_stripes], then: zebra }
-  - { id: Z13, if: [bird, not flies, long_neck, long_legs, black_and_white], then: ostrich }
-  - { id: Z14, if: [bird, not flies, swims, black_and_white], then: penguin }
-  - { id: Z15, if: [bird, good_flier], then: albatross }
+  - { id: Z1, if: [?a has hair], then: ?a is mammal }
+  - { id: Z2, if: [?a gives milk], then: ?a is mammal }
+  - { id: Z3, if: [?a has feathers], then: ?a is bird }
+  - { id: Z4, if: [?a can fly, ?a lays eggs], then: ?a is bird }
+  - { id: Z5, if: [?a is mammal, ?a eats meat], then: ?a is carnivore }
+  - { id: Z6, if: [?a is mammal, ?a has pointed_teeth, ?a has claws, ?a has forward_eyes], then: ?a is carnivore }
+  - { id: Z7, if: [?a is mammal, ?a has hooves], then: ?a is ungulate }
+  - { id: Z8, if: [?a is mammal, ?a chews cud], then: ?a is ungulate }
+  - { id: Z9, if: [?a is carnivore, ?a is tawny, ?a has dark_spots], then: ?a is cheetah }
+  - { id: Z10, if: [?a is carnivore, ?a is tawny, ?a has black_stripes], then: ?a is tiger }
+  - { id: Z11, if: [?a is ungulate, ?a has long_neck, ?a has long_legs, ?a has dark_spots], then: ?a is giraffe }
+  - { id: Z12, if: [?a is ungulate, ?a has black_stripes], then: ?a is zebra }
+  - { id: Z13, if: [?a is bird, not ?a can fly, ?a has long_neck, ?a has long_legs, ?a is black_and_white], then: ?a is ostrich }
+  - { id: Z14, if: [?a is bird, not ?a can fly, ?a can swim, ?a is black_and_white], then: ?a is penguin }
+  - { id: Z15, if: [?a is bird, ?a is good_flier], then: ?a is albatross }
 
 cases:
   - id: cheetah
-    facts: [has_hair, pointed_teeth, claws, forward_eyes, tawny, dark_spots]
-    expect: [carnivore, cheetah, mammal]
+    facts: [a has hair, a has pointed_teeth, a has claws, a has forward_eyes, a is tawny, a has dark_spots]
+    expect: [a is carnivore, a is cheetah, a is mammal]
+    expect_not: [a is tiger, a is ungulate]
   - id: tiger
-    facts: [gives_milk, eats_meat, tawny, black_stripes]
-    expect: [carnivore, mammal, tiger]
+    facts: [a gives milk, a eats meat, a is tawny, a has black_stripes]
+    expect: [a is carnivore, a is mammal, a is tiger]
+    expect_not: [a is zebra, a is cheetah]
   - id: giraffe
-    facts: [has_hair, chews_cud, long_neck, long_legs, dark_spots]
-    expect: [giraffe, mammal, ungulate]
+    facts: [a has hair, a chews cud, a has long_neck, a has long_legs, a has dark_spots]
+    expect: [a is giraffe, a is mammal, a is ungulate]
+    expect_not: [a is cheetah, a is carnivore]
   - id: zebra
-    facts: [gives_milk, hooves, black_stripes]
-    expect: [mammal, ungulate, zebra]
+    facts: [a gives milk, a has hooves, a has black_stripes]
+    expect: [a is mammal, a is ungulate, a is zebra]
+    expect_not: [a is tiger]
   - id: ostrich
-    facts: [has_feathers, long_neck, long_legs, black_and_white]
-    expect: [bird, ostrich]
+    facts: [a has feathers, a has long_neck, a has long_legs, a is black_and_white]
+    expect: [a is bird, a is ostrich]
+    expect_not: [a is penguin, a is albatross]
   - id: penguin
-    facts: [has_feathers, lays_eggs, swims, black_and_white]
-    expect: [bird, penguin]
+    facts: [a has feathers, a lays eggs, a can swim, a is black_and_white]
+    expect: [a is bird, a is penguin]
+    expect_not: [a is ostrich]
   - id: albatross
-    facts: [has_feathers, flies, good_flier]
-    expect: [albatross, bird]
+    facts: [a has feathers, a can fly, a is good_flier]
+    expect: [a is albatross, a is bird]
+    expect_not: [a is penguin, a is ostrich]
   - id: housefly
     note: Trap. It flies and lays eggs, so rule Z4 makes it a bird.
-    facts: [flies, lays_eggs]
-    expect: [bird]
+    facts: [a can fly, a lays eggs]
+    expect: [a is bird]
+    expect_not: [a is mammal, a is albatross]
   - id: platypus
     note: Lays eggs and has hair; the rules only see a mammal.
-    facts: [has_hair, gives_milk, lays_eggs, swims]
-    expect: [mammal]
+    facts: [a has hair, a gives milk, a lays eggs, a can swim]
+    expect: [a is mammal]
+    expect_not: [a is bird, a is penguin]
   - id: flying_penguin
     note: Trap. A penguin that flies fails Z14, and nothing else names it.
-    facts: [has_feathers, flies, swims, black_and_white]
-    expect: [bird]
+    facts: [a has feathers, a can fly, a can swim, a is black_and_white]
+    expect: [a is bird]
+    expect_not: [a is penguin, a is albatross]
   - id: striped_cat
     note: Both cheetah-like spots and tiger stripes; both rules fire.
-    facts: [has_hair, eats_meat, tawny, dark_spots, black_stripes]
-    expect: [carnivore, cheetah, mammal, tiger]
+    facts: [a has hair, a eats meat, a is tawny, a has dark_spots, a has black_stripes]
+    expect: [a is carnivore, a is cheetah, a is mammal, a is tiger]
+    expect_not: [a is zebra]

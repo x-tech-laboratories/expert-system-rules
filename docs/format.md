@@ -1,8 +1,9 @@
 # Rule set format
 
-A rule set is one YAML file. Everything in it is checked when it loads: unknown names, cases that
-give facts no feature describes, and conclusions that depend on their own negation are all refused
-with a message naming the problem.
+A rule set is one YAML file of facts, rules and test cases about things and how they relate. Every
+statement is a **triple**: `subject relation object`, such as `milk stored_in fridge` or
+`penguin subclass_of bird`, the same shape as a Wikidata statement. Everything is checked when the
+file loads, and a problem is refused with a message naming it.
 
 | Field | Required | Holds |
 | --- | --- | --- |
@@ -11,48 +12,57 @@ with a message naming the problem.
 | `description` | no | What the rule set is about and what it tests |
 | `license` | yes | An SPDX identifier, `CC-BY-SA-4.0` for rule sets written here |
 | `source` | yes | Where the rules come from, with attribution when adapted |
-| `tags` | no | Labels such as `classification`, `diagnosis`, `negation`, `trap-cases`, `original`, `adapted` |
-| `features` | yes | Each observable fact and the question that asks for it |
-| `goals` | no | The conclusions a consultation sets out to decide |
+| `tags` | no | Labels such as `classification`, `diagnosis`, `commonsense`, `negation`, `trap-cases`, `original`, `adapted` |
+| `relations` | yes | Each relation the file uses and what it means |
+| `facts` | no | Triples that hold in every case |
 | `rules` | yes | The rules, each with `id`, `if` and `then` |
-| `cases` | no | Test cases, each with `id`, `facts`, `expect` and an optional `note` |
+| `cases` | no | Test cases, each with `id`, `facts`, `expect`, `expect_not` and an optional `note` |
 
-## Features and conclusions
+## Names and triples
 
-Names are `lower_snake_case`. A **feature** is something you observe and give; a **conclusion** is
-anything a rule's `then` names. A name is one or the other, never both: a rule cannot conclude a
-feature, and a case cannot give a conclusion.
+Subjects, relations and objects are `lower_snake_case` names; numbers are names too. A triple is
+written as one string with single spaces, `cheese in kitchen`. Every relation must be listed under
+`relations` with a line saying what it means, which catches typos and tells a reader (or a model)
+how to read it. Quote a relation whose name YAML treats specially, such as `"on"`.
 
 ## Rules
 
 ```yaml
-- { id: R6, if: [bird, not grounded], then: flier }
+- { id: K4, if: [?x in ?inner, ?inner in ?outer], then: ?x in ?outer }
+- { id: K7, if: [?x is_a perishable, ?x stored_in ?p, not ?p is cold], then: ?x is at_risk_of_spoiling }
 ```
 
-All conditions in `if` must hold. `not x` holds when `x` cannot be concluded from the given facts
-and the rules (a closed world). Two rules with the same `then` are alternatives: either one is
-enough.
+Words starting with `?` are variables. A rule applies to every way of filling its variables in that
+makes all its conditions hold, and then its conclusion holds too. Two rules with the same
+conclusion are alternatives: either one is enough.
 
-The engine settles conclusions in layers, so `not x` is only read once everything that could
-conclude `x` has run. A rule set where a conclusion depends on its own negation, directly or
-through a chain, has no single answer and is refused.
+`not ...` holds when that triple cannot be concluded at all (a closed world). Every variable in a
+`not` condition or in the conclusion must also appear in a condition without `not`, so it is filled
+in before it is read.
+
+The engine runs rules in layers, so a `not` is only read once everything that could conclude it
+has run. Triples are grouped for this by relation and, when the object is fixed, by object too, so
+`?x is grounded` and `?x is flier` are separate. A rule set where a conclusion depends on its own
+negation has no single answer and is refused.
 
 ## Cases
 
 ```yaml
-- id: penguin
-  note: Trap. Nothing says it is heavy, so under these rules it flies.
-  facts: [has_feathers, lays_eggs]
-  expect: [bird, flier, exportable]
+- id: cooler_on_counter
+  note: Trap. Only the cheese's own container counts.
+  facts: [cooler is cold, cooler on counter, cheese stored_in cooler]
+  expect: [cheese in kitchen, cheese is cold]
+  expect_not: [cheese is at_risk_of_spoiling]
 ```
 
-`facts` are the features that are true; every other feature is false. `expect` lists every
-conclusion that holds, not only the goals, so a case pins the whole answer. Write `expect` by hand
-from the rules and let `npm run check` confirm it; a disagreement is either a slip in the case or a
-rule that does not say what was meant.
+A case adds its `facts` to the shared ones and asks questions: each triple under `expect` must hold
+and each under `expect_not` must not. A case may describe several things at once. Write the answers
+by hand from the rules and let `npm run check` confirm them; a disagreement is either a slip in the
+case or a rule that does not say what was meant. The same questions are what a model is asked by
+`bench`, one point each.
 
 ## Organising
 
-One file is one rule set, kept whole because a negated condition reads the entire set. Files sit in
-a folder per subject under `rulesets/` (`animals/`, `vehicles/`, `fiction/`), and `tags` carry the
+One file is one rule set, kept whole because a `not` reads the entire set. Files sit in a folder per
+subject under `rulesets/` (`animals/`, `commonsense/`, `vehicles/`, `fiction/`), and `tags` carry the
 other ways to group them.
