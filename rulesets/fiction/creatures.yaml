@@ -1,0 +1,73 @@
+id: creatures
+title: Creature licensing
+description: >
+  Fictional creatures licensed for export. Several cases are traps where the rules
+  contradict real-world knowledge, to see whether a model follows the rules or its priors.
+license: CC-BY-SA-4.0
+tags: [licensing, negation, trap-cases, original]
+source: Original to this repository.
+
+features:
+  has_feathers: Does it have feathers?
+  has_scales: Does it have scales?
+  has_gills: Does it have gills?
+  lays_eggs: Does it lay eggs?
+  heavy: Is it heavy?
+  nocturnal: Is it nocturnal?
+  venomous: Is it venomous?
+
+goals: [exportable, quarantined, protected, harvestable]
+
+rules:
+  - { id: R1, if: [has_feathers], then: bird }
+  - { id: R2, if: [lays_eggs, has_scales], then: reptile }
+  - { id: R3, if: [bird, heavy], then: grounded }
+  - { id: R4, if: [has_gills], then: aquatic }
+  - { id: R5, if: [aquatic, lays_eggs], then: spawner }
+  - { id: R6, if: [bird, not grounded], then: flier }
+  - { id: R7, if: [flier, nocturnal], then: glimmerwing }
+  - { id: R8, if: [reptile, aquatic], then: drakeling }
+  - { id: R9, if: [spawner, not bird, not reptile], then: murkling }
+  - { id: R10, if: [grounded, not aquatic], then: strider }
+  - { id: R11, if: [glimmerwing], then: protected }
+  - { id: R12, if: [drakeling], then: protected }
+  - { id: R13, if: [murkling, not protected], then: harvestable }
+  - { id: R14, if: [protected, venomous], then: quarantined }
+  - { id: R15, if: [harvestable, venomous], then: quarantined }
+  - { id: R16, if: [flier, not quarantined], then: exportable }
+  - { id: R17, if: [strider, not quarantined], then: exportable }
+
+cases:
+  - id: penguin
+    note: Trap. Nothing says it is heavy, so under these rules it flies and can be exported.
+    facts: [has_feathers, lays_eggs]
+    expect: [bird, flier, exportable]
+  - id: c2
+    facts: [has_feathers, nocturnal, venomous]
+    expect: [bird, flier, glimmerwing, protected, quarantined]
+  - id: c3
+    facts: [has_gills, lays_eggs, has_scales]
+    expect: [aquatic, drakeling, protected, reptile, spawner]
+  - id: c4
+    facts: [has_gills, lays_eggs, venomous]
+    expect: [aquatic, harvestable, murkling, quarantined, spawner]
+  - id: c5
+    facts: [has_feathers, heavy, has_gills]
+    expect: [aquatic, bird, grounded]
+  - id: c6
+    note: Trap. Venomous, but neither protected nor harvestable, so not quarantined.
+    facts: [has_feathers, heavy, venomous]
+    expect: [bird, exportable, grounded, strider]
+  - id: c7
+    facts: [has_feathers, has_gills, lays_eggs, nocturnal]
+    expect: [aquatic, bird, exportable, flier, glimmerwing, protected, spawner]
+  - id: bat
+    note: Trap. No feathers, so under these rules it is nothing at all.
+    facts: [nocturnal, venomous]
+    expect: []
+  - id: sea_snake
+    facts: [has_scales, has_gills, lays_eggs, venomous]
+    expect: [aquatic, drakeling, protected, quarantined, reptile, spawner]
+  - id: c10
+    facts: [has_gills, lays_eggs, nocturnal, heavy]
+    expect: [aquatic, harvestable, murkling, spawner]

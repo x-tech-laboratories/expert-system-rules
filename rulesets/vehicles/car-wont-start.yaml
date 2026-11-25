@@ -1,0 +1,70 @@
+id: car-wont-start
+title: Car won't start
+description: >
+  A small diagnostic rule set for a car that will not start, chaining from what the driver
+  notices to a likely cause and a next step. Illustrative only, not mechanical advice.
+license: CC-BY-SA-4.0
+tags: [diagnosis, negation, trap-cases, original]
+source: Original to this repository.
+
+features:
+  cranks: Does the engine turn over when you turn the key?
+  lights_dim: Are the dashboard lights dim or off?
+  clicking: Do you hear clicking when you turn the key?
+  fuel_gauge_empty: Does the fuel gauge read empty?
+  smells_of_fuel: Is there a strong smell of fuel?
+  battery_old: Is the battery more than five years old?
+  cold_weather: Is it very cold?
+  starts_then_dies: Does it start and then stall straight away?
+
+goals: [needs_jump_start, needs_fuel, wait_and_retry, call_mechanic]
+
+rules:
+  - { id: C1, if: [not cranks, lights_dim], then: weak_battery }
+  - { id: C2, if: [not cranks, battery_old, cold_weather], then: weak_battery }
+  - { id: C3, if: [not cranks, clicking, not weak_battery], then: starter_fault }
+  - { id: C4, if: [cranks, fuel_gauge_empty], then: out_of_fuel }
+  - { id: C5, if: [starts_then_dies, fuel_gauge_empty], then: out_of_fuel }
+  - { id: C6, if: [cranks, smells_of_fuel, not out_of_fuel], then: flooded }
+  - { id: C7, if: [cranks, not out_of_fuel, not flooded], then: ignition_fault }
+  - { id: C8, if: [starts_then_dies, not out_of_fuel], then: fuel_delivery_fault }
+  - { id: C9, if: [not cranks, not weak_battery, not starter_fault], then: unknown_electrical_fault }
+  - { id: C10, if: [weak_battery], then: needs_jump_start }
+  - { id: C11, if: [out_of_fuel], then: needs_fuel }
+  - { id: C12, if: [flooded], then: wait_and_retry }
+  - { id: C13, if: [starter_fault], then: call_mechanic }
+  - { id: C14, if: [ignition_fault], then: call_mechanic }
+  - { id: C15, if: [fuel_delivery_fault], then: call_mechanic }
+  - { id: C16, if: [unknown_electrical_fault], then: call_mechanic }
+
+cases:
+  - id: dead_battery
+    facts: [lights_dim]
+    expect: [needs_jump_start, weak_battery]
+  - id: cold_morning
+    note: Lights look fine, but an old battery in the cold still counts as weak, which rules out the starter.
+    facts: [battery_old, cold_weather, clicking]
+    expect: [needs_jump_start, weak_battery]
+  - id: clicking_starter
+    facts: [clicking]
+    expect: [call_mechanic, starter_fault]
+  - id: empty_tank
+    facts: [cranks, fuel_gauge_empty]
+    expect: [needs_fuel, out_of_fuel]
+  - id: flooded_engine
+    facts: [cranks, smells_of_fuel]
+    expect: [flooded, wait_and_retry]
+  - id: fuel_smell_but_empty
+    note: Trap. An empty tank rules out flooding even with a fuel smell.
+    facts: [cranks, smells_of_fuel, fuel_gauge_empty]
+    expect: [needs_fuel, out_of_fuel]
+  - id: cranks_no_start
+    facts: [cranks]
+    expect: [call_mechanic, ignition_fault]
+  - id: stalls
+    facts: [cranks, starts_then_dies]
+    expect: [call_mechanic, fuel_delivery_fault, ignition_fault]
+  - id: silent
+    note: Nothing at all happens and nothing explains it.
+    facts: []
+    expect: [call_mechanic, unknown_electrical_fault]
