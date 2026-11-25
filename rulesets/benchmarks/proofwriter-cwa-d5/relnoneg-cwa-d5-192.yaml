@@ -1,0 +1,46 @@
+id: relnoneg-cwa-d5-192
+title: ProofWriter RelNoneg-CWA-D5-192
+description: "The cat eats the mouse. The cat likes the tiger. The cow eats the tiger. The cow likes the cat. The mouse chases the cat. The mouse chases the cow. The mouse eats the tiger. The mouse is green. The mouse is round. The tiger chases the cat. The tiger eats the cow. The tiger likes the mouse. If someone chases the cow and they chase the mouse then the mouse is blue. If someone eats the cat then they are nice. If the cat eats the mouse then the mouse likes the cow. If someone chases the mouse and they are round then they are big. If someone chases the tiger and the tiger chases the cat then the tiger is round. If someone eats the tiger and they like the cat then the cat likes the cow. If the mouse likes the cow and the mouse chases the cow then the cow eats the cat. If someone eats the cow and they eat the cat then they chase the tiger. If someone eats the tiger and they eat the cat then the tiger eats the cat."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-192, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  eats: The subject eats the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+
+rules:
+  - { id: R1, if: [?x chases cow, ?x chases mouse], then: mouse is blue }
+  - { id: R2, if: [?x eats cat], then: ?x is nice }
+  - { id: R3, if: [cat eats mouse], then: mouse likes cow }
+  - { id: R4, if: [?x chases mouse, ?x is round], then: ?x is big }
+  - { id: R5, if: [?x chases tiger, tiger chases cat], then: tiger is round }
+  - { id: R6, if: [?x eats tiger, ?x likes cat], then: cat likes cow }
+  - { id: R7, if: [mouse likes cow, mouse chases cow], then: cow eats cat }
+  - { id: R8, if: [?x eats cow, ?x eats cat], then: ?x chases tiger }
+  - { id: R9, if: [?x eats tiger, ?x eats cat], then: tiger eats cat }
+
+facts:
+  - cat eats mouse
+  - cat likes tiger
+  - cow eats tiger
+  - cow likes cat
+  - mouse chases cat
+  - mouse chases cow
+  - mouse eats tiger
+  - mouse is green
+  - mouse is round
+  - tiger chases cat
+  - tiger eats cow
+  - tiger likes mouse
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [tiger chases cat, cat likes tiger, mouse likes cow, cat likes cow, cow eats cat, tiger eats cat, tiger chases tiger, tiger is round]
+    expect_not: [mouse is blue, cow chases tiger, mouse chases tiger, cow is big, tiger is big, cat is nice, mouse eats cow, tiger chases cow, cow likes cow, mouse likes cat, cat likes mouse, cow chases cow]

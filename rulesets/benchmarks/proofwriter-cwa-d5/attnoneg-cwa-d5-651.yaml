@@ -1,0 +1,38 @@
+id: attnoneg-cwa-d5-651
+title: ProofWriter AttNoneg-CWA-D5-651
+description: "Charlie is rough. Erin is nice. Erin is red. Fiona is cold. Fiona is red. Harry is furry. Harry is nice. All furry people are nice. Nice, red people are rough. All nice people are rough. If someone is red and round then they are furry. All big, rough people are round. All red, rough people are big. All cold, furry people are rough. If someone is cold and round then they are red. All furry people are cold."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-651, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is furry], then: ?x is nice }
+  - { id: R2, if: [?x is nice, ?x is red], then: ?x is rough }
+  - { id: R3, if: [?x is nice], then: ?x is rough }
+  - { id: R4, if: [?x is red, ?x is round], then: ?x is furry }
+  - { id: R5, if: [?x is big, ?x is rough], then: ?x is round }
+  - { id: R6, if: [?x is red, ?x is rough], then: ?x is big }
+  - { id: R7, if: [?x is cold, ?x is furry], then: ?x is rough }
+  - { id: R8, if: [?x is cold, ?x is round], then: ?x is red }
+  - { id: R9, if: [?x is furry], then: ?x is cold }
+
+facts:
+  - charlie is rough
+  - erin is nice
+  - erin is red
+  - fiona is cold
+  - fiona is red
+  - harry is furry
+  - harry is nice
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is rough, harry is nice, harry is rough, harry is cold, erin is big, erin is round, erin is furry, erin is cold]
+    expect_not: [charlie is big, charlie is nice, harry is big, fiona is furry, harry is red, charlie is furry]

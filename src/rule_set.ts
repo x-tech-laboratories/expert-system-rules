@@ -147,15 +147,16 @@ function read_names(value: unknown, where: string, problems: string[]): string[]
 
 // ── Layers ───────────────────────────────────────────────────────────────────
 
-// A triple's kind for layering: its relation, and its object when that is fixed.
+// A triple's kind for layering: its relation, with its subject and object when they are fixed.
 function signature(triple: Triple): string {
-  return `${triple.relation} ${is_variable(triple.object) ? "*" : triple.object}`;
+  const fixed = (term: string) => (is_variable(term) ? "*" : term);
+  return `${fixed(triple.subject)} ${triple.relation} ${fixed(triple.object)}`;
 }
 
 function signatures_overlap(first: string, second: string): boolean {
-  const [first_relation, first_object] = first.split(" ");
-  const [second_relation, second_object] = second.split(" ");
-  return first_relation === second_relation && (first_object === "*" || second_object === "*" || first_object === second_object);
+  const first_parts = first.split(" ");
+  const second_parts = second.split(" ");
+  return first_parts.every((part, index) => part === second_parts[index] || ((index === 0 || index === 2) && (part === "*" || second_parts[index] === "*")));
 }
 
 // Puts every rule in a layer that runs after everything its conditions read, and strictly after anything it negates; null when a negation loops back on itself.

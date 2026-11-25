@@ -1,0 +1,42 @@
+id: attneg-cwa-d5-346
+title: ProofWriter AttNeg-CWA-D5-346
+description: "Charlie is cold. Charlie is green. Charlie is round. Charlie is white. Dave is white. Erin is cold. Erin is green. Erin is red. Erin is round. Gary is rough. Gary is young. If Dave is white then Dave is round. If someone is white then they are green. If Erin is not green then Erin is rough. Round, red people are cold. If someone is rough and green then they are young. All green, red people are round. If someone is round and young then they are red. If someone is white and young then they are rough. Round people are rough."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-346, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [dave is white], then: dave is round }
+  - { id: R2, if: [?x is white], then: ?x is green }
+  - { id: R3, if: [not erin is green], then: erin is rough }
+  - { id: R4, if: [?x is round, ?x is red], then: ?x is cold }
+  - { id: R5, if: [?x is rough, ?x is green], then: ?x is young }
+  - { id: R6, if: [?x is green, ?x is red], then: ?x is round }
+  - { id: R7, if: [?x is round, ?x is young], then: ?x is red }
+  - { id: R8, if: [?x is white, ?x is young], then: ?x is rough }
+  - { id: R9, if: [?x is round], then: ?x is rough }
+
+facts:
+  - charlie is cold
+  - charlie is green
+  - charlie is round
+  - charlie is white
+  - dave is white
+  - erin is cold
+  - erin is green
+  - erin is red
+  - erin is round
+  - gary is rough
+  - gary is young
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is round, gary is young, erin is rough, dave is green, erin is young, dave is rough, charlie is red, dave is red, dave is cold]
+    expect_not: [gary is green, gary is cold, gary is red, gary is round, gary is white, erin is white]

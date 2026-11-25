@@ -1,0 +1,44 @@
+id: attnoneg-cwa-d5-275
+title: ProofWriter AttNoneg-CWA-D5-275
+description: "Anne is big. Anne is cold. Anne is red. Bob is big. Bob is furry. Bob is red. Bob is rough. Bob is smart. Bob is young. Charlie is cold. Charlie is red. Charlie is smart. Charlie is young. Harry is smart. If Charlie is cold and Charlie is big then Charlie is young. All cold, rough things are furry. All smart things are young. Smart, red things are rough. All furry things are rough. Big things are red. All young things are big. Rough, big things are furry."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-275, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [charlie is cold, charlie is big], then: charlie is young }
+  - { id: R2, if: [?x is cold, ?x is rough], then: ?x is furry }
+  - { id: R3, if: [?x is smart], then: ?x is young }
+  - { id: R4, if: [?x is smart, ?x is red], then: ?x is rough }
+  - { id: R5, if: [?x is furry], then: ?x is rough }
+  - { id: R6, if: [?x is big], then: ?x is red }
+  - { id: R7, if: [?x is young], then: ?x is big }
+  - { id: R8, if: [?x is rough, ?x is big], then: ?x is furry }
+
+facts:
+  - anne is big
+  - anne is cold
+  - anne is red
+  - bob is big
+  - bob is furry
+  - bob is red
+  - bob is rough
+  - bob is smart
+  - bob is young
+  - charlie is cold
+  - charlie is red
+  - charlie is smart
+  - charlie is young
+  - harry is smart
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is furry, anne is big, charlie is big, charlie is rough, charlie is furry, harry is big, harry is red, harry is rough, harry is furry]
+    expect_not: [anne is furry, anne is young, anne is rough, bob is cold, harry is cold, anne is smart]

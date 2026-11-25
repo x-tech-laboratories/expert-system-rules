@@ -2,11 +2,13 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
 import { explain, infer, query } from "./engine.ts";
+import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
-import { is_variable, list_rule_set_files, load_rule_set, parse_triple, rule_text, triple_text, type RuleSet } from "./rule_set.ts";
+import { is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
 import { ask_model, check_cases, is_correct, score, type CaseResult, type ProgramRunner } from "./runner.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
@@ -32,6 +34,9 @@ const usage = `Usage:
   expert-system-rules prompt <file.yaml>             print the prompt a model is given
   expert-system-rules bench [--runs N] [file.yaml ...] -- <command ...>
                                                      send each rule set's prompt to a command on stdin and score its JSON answer
+  expert-system-rules import-proofwriter <meta-file.jsonl> <out-folder> [--every N]
+                                                     convert ProofWriter's closed-world theories, check each against the engine,
+                                                     and write every Nth one (default 20) as a rule set
 `;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -144,6 +149,60 @@ async function bench(context: CliContext, args: string[]): Promise<number> {
   return 0;
 }
 
+async function import_proofwriter(context: CliContext, args: string[]): Promise<number> {
+  let every = 20;
+  const every_at = args.indexOf("--every");
+  if (every_at >= 0) {
+    every = Number(args[every_at + 1]);
+    if (!Number.isInteger(every) || every < 1) {
+      line(context.err, "--every needs a whole number of 1 or more");
+      return 2;
+    }
+    args = args.filter((_, index) => index !== every_at && index !== every_at + 1);
+  }
+  if (args.length !== 2) {
+    context.err.write(usage);
+    return 2;
+  }
+  const [source, folder] = args.map(path => resolve(context.cwd, path));
+  const lines = (await readFile(source, "utf8")).split("\n").filter(text => text.trim());
+  await mkdir(folder, { recursive: true });
+
+  let theories_matching = 0;
+  let questions_matching = 0;
+  let questions = 0;
+  let written = 0;
+  const refused: string[] = [];
+  const disagreeing: string[] = [];
+  for (const [index, text] of lines.entries()) {
+    const record = JSON.parse(text) as ProofWriterRecord;
+    let rule_set: RuleSet;
+    let yaml: string;
+    try {
+      yaml = convert_theory(record);
+      rule_set = parse_rule_set(yaml, record.id);
+    } catch (error) {
+      refused.push(`${record.id}: ${error instanceof RuleSetError ? error.problems.join("; ") : (error as Error).message}`);
+      continue;
+    }
+    const total = rule_set.cases.reduce((sum, entry) => sum + questions_of(entry).length, 0);
+    const wrong = check_cases(rule_set).reduce((sum, result) => sum + result.wrong.length, 0);
+    questions += total;
+    questions_matching += total - wrong;
+    if (wrong === 0) theories_matching++;
+    else disagreeing.push(`${record.id}: the engine disagrees with ${wrong} of ProofWriter's ${total} answers`);
+    if (index % every === 0) {
+      await writeFile(join(folder, `${record.id.toLowerCase()}.yaml`), yaml);
+      written++;
+    }
+  }
+  line(context.out, `${lines.length} theories: ${theories_matching} fully reproduced, ${disagreeing.length} with different answers, ${refused.length} refused`);
+  line(context.out, `${questions_matching}/${questions} answers match ProofWriter`);
+  line(context.out, `wrote ${written} rule sets to ${folder}`);
+  for (const failure of [...disagreeing, ...refused]) line(context.out, `  ${failure}`);
+  return disagreeing.length || refused.length ? 1 : 0;
+}
+
 // ── Entry ────────────────────────────────────────────────────────────────────
 
 export async function run_cli(args: string[], context: CliContext): Promise<number> {
@@ -168,6 +227,8 @@ export async function run_cli(args: string[], context: CliContext): Promise<numb
         return 0;
       case "bench":
         return await bench(context, rest);
+      case "import-proofwriter":
+        return await import_proofwriter(context, rest);
       case undefined:
       case "help":
       case "--help":

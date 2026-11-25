@@ -1,0 +1,38 @@
+id: attnoneg-cwa-d5-146
+title: ProofWriter AttNoneg-CWA-D5-146
+description: "Bob is red. Bob is young. Charlie is red. Dave is cold. Dave is round. Erin is kind. Erin is rough. Young, furry people are rough. Cold, rough people are young. All cold, red people are kind. Young, furry people are cold. If someone is cold then they are young. If someone is rough then they are red. All kind, round people are furry. Cold, young people are red. All rough people are young."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-146, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is young, ?x is furry], then: ?x is rough }
+  - { id: R2, if: [?x is cold, ?x is rough], then: ?x is young }
+  - { id: R3, if: [?x is cold, ?x is red], then: ?x is kind }
+  - { id: R4, if: [?x is young, ?x is furry], then: ?x is cold }
+  - { id: R5, if: [?x is cold], then: ?x is young }
+  - { id: R6, if: [?x is rough], then: ?x is red }
+  - { id: R7, if: [?x is kind, ?x is round], then: ?x is furry }
+  - { id: R8, if: [?x is cold, ?x is young], then: ?x is red }
+  - { id: R9, if: [?x is rough], then: ?x is young }
+
+facts:
+  - bob is red
+  - bob is young
+  - charlie is red
+  - dave is cold
+  - dave is round
+  - erin is kind
+  - erin is rough
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is young, erin is kind, erin is red, dave is young, dave is red, dave is kind, dave is furry, dave is rough]
+    expect_not: [charlie is cold, charlie is young, bob is kind, erin is furry, charlie is kind, bob is rough, bob is round, erin is round]

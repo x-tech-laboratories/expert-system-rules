@@ -1,0 +1,44 @@
+id: relneg-cwa-d5-777
+title: ProofWriter RelNeg-CWA-D5-777
+description: "The cat likes the lion. The cat likes the squirrel. The cat visits the squirrel. The dog is big. The dog visits the lion. The lion is young. The lion visits the cat. The lion visits the squirrel. The squirrel eats the dog. The squirrel eats the lion. The squirrel visits the dog. If someone eats the lion and they do not visit the squirrel then the squirrel is red. If the dog eats the lion and the dog visits the squirrel then the lion likes the cat. All green people are big. If someone is big then they visit the lion. If someone eats the squirrel then the squirrel eats the dog. If someone likes the squirrel then they are green. If the cat visits the lion and the lion visits the squirrel then the lion is green. If someone visits the dog then they visit the cat."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-777, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  eats: The subject eats the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x eats lion, not ?x visits squirrel], then: squirrel is red }
+  - { id: R2, if: [dog eats lion, dog visits squirrel], then: lion likes cat }
+  - { id: R3, if: [?x is green], then: ?x is big }
+  - { id: R4, if: [?x is big], then: ?x visits lion }
+  - { id: R5, if: [?x eats squirrel], then: squirrel eats dog }
+  - { id: R6, if: [?x likes squirrel], then: ?x is green }
+  - { id: R7, if: [cat visits lion, lion visits squirrel], then: lion is green }
+  - { id: R8, if: [?x visits dog], then: ?x visits cat }
+
+facts:
+  - cat likes lion
+  - cat likes squirrel
+  - cat visits squirrel
+  - dog is big
+  - dog visits lion
+  - lion is young
+  - lion visits cat
+  - lion visits squirrel
+  - squirrel eats dog
+  - squirrel eats lion
+  - squirrel visits dog
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [squirrel visits dog, cat likes lion, squirrel visits cat, squirrel is red, cat is big, cat visits lion, lion is green, lion is big]
+    expect_not: [dog is green, lion likes cat, squirrel is green, squirrel visits lion, cat visits cat, squirrel is big, cat is red, dog likes lion, lion is red, cat eats dog, dog visits dog, cat eats cat]

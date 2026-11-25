@@ -1,0 +1,44 @@
+id: relneg-cwa-d5-394
+title: ProofWriter RelNeg-CWA-D5-394
+description: "The bear chases the cow. The bear is green. The cow chases the mouse. The cow chases the rabbit. The mouse chases the bear. The mouse chases the cow. The mouse likes the bear. The rabbit chases the bear. The rabbit chases the cow. The rabbit likes the bear. The rabbit sees the mouse. If someone likes the mouse then the mouse likes the cow. If someone likes the cow then they chase the mouse. If someone chases the mouse then they are green. If someone chases the bear and they see the bear then the bear likes the mouse. If the bear is green and the bear sees the cow then the cow sees the bear. If someone is blue and they like the cow then they are rough. If someone is green then they like the mouse. If someone likes the rabbit then the rabbit sees the bear."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-394, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  is: The subject has this property.
+  likes: The subject likes the object.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x likes mouse], then: mouse likes cow }
+  - { id: R2, if: [?x likes cow], then: ?x chases mouse }
+  - { id: R3, if: [?x chases mouse], then: ?x is green }
+  - { id: R4, if: [?x chases bear, ?x sees bear], then: bear likes mouse }
+  - { id: R5, if: [bear is green, bear sees cow], then: cow sees bear }
+  - { id: R6, if: [?x is blue, ?x likes cow], then: ?x is rough }
+  - { id: R7, if: [?x is green], then: ?x likes mouse }
+  - { id: R8, if: [?x likes rabbit], then: rabbit sees bear }
+
+facts:
+  - bear chases cow
+  - bear is green
+  - cow chases mouse
+  - cow chases rabbit
+  - mouse chases bear
+  - mouse chases cow
+  - mouse likes bear
+  - rabbit chases bear
+  - rabbit chases cow
+  - rabbit likes bear
+  - rabbit sees mouse
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bear chases cow, cow is green, bear likes mouse, cow likes mouse, mouse likes cow, mouse chases mouse, mouse is green, mouse likes mouse]
+    expect_not: [cow is rough, rabbit likes mouse, bear is rough, rabbit sees bear, cow sees bear, mouse is rough, cow chases bear, rabbit sees cow, cow is nice, cow sees cow, rabbit chases rabbit, rabbit sees rabbit]

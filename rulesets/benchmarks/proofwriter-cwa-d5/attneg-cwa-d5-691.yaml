@@ -1,0 +1,40 @@
+id: attneg-cwa-d5-691
+title: ProofWriter AttNeg-CWA-D5-691
+description: "Bob is cold. Dave is blue. Dave is cold. Dave is furry. Dave is kind. Dave is rough. Dave is young. Gary is kind. Gary is rough. Harry is furry. Harry is kind. All nice things are furry. If something is rough and not blue then it is furry. All kind, furry things are rough. Furry, nice things are young. All young things are nice. Cold things are nice. Nice, young things are kind."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-691, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is nice], then: ?x is furry }
+  - { id: R2, if: [?x is rough, not ?x is blue], then: ?x is furry }
+  - { id: R3, if: [?x is kind, ?x is furry], then: ?x is rough }
+  - { id: R4, if: [?x is furry, ?x is nice], then: ?x is young }
+  - { id: R5, if: [?x is young], then: ?x is nice }
+  - { id: R6, if: [?x is cold], then: ?x is nice }
+  - { id: R7, if: [?x is nice, ?x is young], then: ?x is kind }
+
+facts:
+  - bob is cold
+  - dave is blue
+  - dave is cold
+  - dave is furry
+  - dave is kind
+  - dave is rough
+  - dave is young
+  - gary is kind
+  - gary is rough
+  - harry is furry
+  - harry is kind
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is cold, dave is cold, harry is rough, bob is furry, bob is young, bob is kind, bob is rough]
+    expect_not: [harry is young, gary is nice, gary is young, harry is nice, harry is cold, harry is blue, gary is blue, gary is cold]

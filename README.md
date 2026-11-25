@@ -19,6 +19,7 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 7 | 5 | size classes, bigger and heavier, what fits, comparable units |
 | [Everyday routines](rulesets/commonsense/routines.yaml) | commonsense | 5 | 7 | restaurant, fast food, doctor and train scripts |
 | [Time and order](rulesets/commonsense/time.yaml) | commonsense | 11 | 7 | days of the week, past and future, during, ages, impossible timelines |
+| [ProofWriter sample](rulesets/benchmarks/proofwriter-cwa-d5/) | benchmarks | 50 theories | 50 | generated reasoning puzzles with correct answers, converted from ProofWriter |
 | [Creature licensing](rulesets/fiction/creatures.yaml) | fiction | 17 | 11 | fictional licensing, built to catch real-world priors |
 | [Car won't start](rulesets/vehicles/car-wont-start.yaml) | vehicles | 16 | 9 | diagnosis |
 
@@ -27,8 +28,9 @@ join them through `?variables`, so a rule set can describe many things and how t
 file holds one rule set: its relations, facts, rules and cases belong together, since a `not`
 condition reads the whole set. Files sit in a folder per subject, and `tags` in each file mark the
 other ways to slice them. The format is described in [docs/format.md](docs/format.md), larger
-collections elsewhere are listed in [docs/sources.md](docs/sources.md), and where the project is
-going is in [docs/roadmap.md](docs/roadmap.md).
+collections elsewhere are listed in [docs/sources.md](docs/sources.md), plans for porting them
+are in [docs/porting.md](docs/porting.md), and where the project is going is in
+[docs/roadmap.md](docs/roadmap.md).
 
 A small example:
 
@@ -63,6 +65,7 @@ npm run check                                     # validate every rule set and 
 npm run explain -- rulesets/fiction/creatures.yaml penguin "penguin is exportable"
 npm run query -- rulesets/commonsense/kitchen.yaml cooler_on_counter "cheese in ?where"
 npm run prompt -- rulesets/fiction/creatures.yaml # the prompt a model is given
+npm run import-proofwriter -- CWA/depth-5/meta-test.jsonl out/   # convert ProofWriter theories
 npm run bench -- --runs 3 -- claude -p --model haiku
 ```
 

@@ -1,0 +1,47 @@
+id: attnoneg-cwa-d5-935
+title: ProofWriter AttNoneg-CWA-D5-935
+description: "Anne is big. Anne is green. Anne is nice. Anne is red. Anne is rough. Anne is round. Anne is smart. Erin is big. Erin is red. Fiona is nice. Fiona is rough. Fiona is round. Fiona is smart. Gary is big. Gary is round. Gary is smart. Rough, red people are round. All round, rough people are green. Green, smart people are nice. If someone is red then they are rough. If someone is round then they are red. Green people are red. Nice people are red. Green people are smart. If someone is red then they are rough."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-935, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is rough, ?x is red], then: ?x is round }
+  - { id: R2, if: [?x is round, ?x is rough], then: ?x is green }
+  - { id: R3, if: [?x is green, ?x is smart], then: ?x is nice }
+  - { id: R4, if: [?x is red], then: ?x is rough }
+  - { id: R5, if: [?x is round], then: ?x is red }
+  - { id: R6, if: [?x is green], then: ?x is red }
+  - { id: R7, if: [?x is nice], then: ?x is red }
+  - { id: R8, if: [?x is green], then: ?x is smart }
+  - { id: R9, if: [?x is red], then: ?x is rough }
+
+facts:
+  - anne is big
+  - anne is green
+  - anne is nice
+  - anne is red
+  - anne is rough
+  - anne is round
+  - anne is smart
+  - erin is big
+  - erin is red
+  - fiona is nice
+  - fiona is rough
+  - fiona is round
+  - fiona is smart
+  - gary is big
+  - gary is round
+  - gary is smart
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [anne is round, anne is rough, fiona is red, erin is rough, erin is round, gary is rough, erin is green, gary is green, gary is nice, erin is nice]
+    expect_not: []

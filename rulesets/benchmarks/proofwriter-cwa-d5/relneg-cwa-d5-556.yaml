@@ -1,0 +1,46 @@
+id: relneg-cwa-d5-556
+title: ProofWriter RelNeg-CWA-D5-556
+description: "The bald eagle eats the bear. The bald eagle is cold. The bear is big. The bear sees the bald eagle. The bear sees the squirrel. The squirrel sees the bear. The squirrel sees the tiger. The tiger chases the bald eagle. The tiger eats the bald eagle. The tiger eats the squirrel. The tiger is cold. The tiger sees the bear. If someone chases the bear then the bear is round. If someone chases the tiger then they chase the squirrel. If someone is big then they chase the squirrel. If the tiger chases the bear and the bear sees the bald eagle then the tiger is round. If someone eats the bald eagle then they eat the squirrel. If someone eats the bear then they eat the tiger. If someone is round then they chase the bear. If the bear is big and the bear chases the squirrel then the squirrel is round. If the squirrel eats the bald eagle then the bald eagle is cold."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNeg-CWA-D5-556, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  chases: The subject chases the object.
+  eats: The subject eats the object.
+  is: The subject has this property.
+  sees: The subject sees the object.
+
+rules:
+  - { id: R1, if: [?x chases bear], then: bear is round }
+  - { id: R2, if: [?x chases tiger], then: ?x chases squirrel }
+  - { id: R3, if: [?x is big], then: ?x chases squirrel }
+  - { id: R4, if: [tiger chases bear, bear sees bald_eagle], then: tiger is round }
+  - { id: R5, if: [?x eats bald_eagle], then: ?x eats squirrel }
+  - { id: R6, if: [?x eats bear], then: ?x eats tiger }
+  - { id: R7, if: [?x is round], then: ?x chases bear }
+  - { id: R8, if: [bear is big, bear chases squirrel], then: squirrel is round }
+  - { id: R9, if: [squirrel eats bald_eagle], then: bald_eagle is cold }
+
+facts:
+  - bald_eagle eats bear
+  - bald_eagle is cold
+  - bear is big
+  - bear sees bald_eagle
+  - bear sees squirrel
+  - squirrel sees bear
+  - squirrel sees tiger
+  - tiger chases bald_eagle
+  - tiger eats bald_eagle
+  - tiger eats squirrel
+  - tiger is cold
+  - tiger sees bear
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [tiger eats squirrel, bear sees squirrel, bald_eagle eats tiger, squirrel is round, squirrel chases bear, bear is round, bear chases bear]
+    expect_not: [bald_eagle eats squirrel, bald_eagle chases squirrel, tiger is round, tiger chases bear, squirrel chases squirrel, squirrel eats squirrel, bear eats bald_eagle, bear is cold, tiger is big, squirrel eats bald_eagle, bald_eagle sees bear, bald_eagle sees tiger]

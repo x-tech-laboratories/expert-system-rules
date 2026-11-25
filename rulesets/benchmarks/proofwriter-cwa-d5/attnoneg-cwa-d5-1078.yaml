@@ -1,0 +1,45 @@
+id: attnoneg-cwa-d5-1078
+title: ProofWriter AttNoneg-CWA-D5-1078
+description: "Charlie is big. Charlie is furry. Charlie is red. Charlie is white. Charlie is young. Erin is nice. Erin is rough. Fiona is furry. Fiona is nice. Fiona is red. Fiona is white. Fiona is young. Harry is furry. Harry is red. All furry people are young. Rough, white people are young. If Harry is furry then Harry is rough. All red people are rough. If someone is young and furry then they are white. If someone is rough then they are white. Young, nice people are red. All red people are furry. If someone is furry then they are big."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-1078, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is furry], then: ?x is young }
+  - { id: R2, if: [?x is rough, ?x is white], then: ?x is young }
+  - { id: R3, if: [harry is furry], then: harry is rough }
+  - { id: R4, if: [?x is red], then: ?x is rough }
+  - { id: R5, if: [?x is young, ?x is furry], then: ?x is white }
+  - { id: R6, if: [?x is rough], then: ?x is white }
+  - { id: R7, if: [?x is young, ?x is nice], then: ?x is red }
+  - { id: R8, if: [?x is red], then: ?x is furry }
+  - { id: R9, if: [?x is furry], then: ?x is big }
+
+facts:
+  - charlie is big
+  - charlie is furry
+  - charlie is red
+  - charlie is white
+  - charlie is young
+  - erin is nice
+  - erin is rough
+  - fiona is furry
+  - fiona is nice
+  - fiona is red
+  - fiona is white
+  - fiona is young
+  - harry is furry
+  - harry is red
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [charlie is young, fiona is furry, harry is big, erin is young, harry is white, erin is red, erin is furry, erin is big]
+    expect_not: [charlie is nice, harry is nice]

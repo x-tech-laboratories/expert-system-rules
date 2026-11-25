@@ -1,0 +1,38 @@
+id: attneg-cwa-d5-298
+title: ProofWriter AttNeg-CWA-D5-298
+description: "Anne is red. Anne is young. Bob is blue. Bob is young. Dave is blue. Erin is big. Erin is young. If something is red then it is furry. All cold, nice things are red. If something is young then it is red. Blue things are cold. Furry things are cold. If something is young then it is blue. If something is nice then it is blue. If something is blue and cold then it is big. All blue, big things are young."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-298, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is red], then: ?x is furry }
+  - { id: R2, if: [?x is cold, ?x is nice], then: ?x is red }
+  - { id: R3, if: [?x is young], then: ?x is red }
+  - { id: R4, if: [?x is blue], then: ?x is cold }
+  - { id: R5, if: [?x is furry], then: ?x is cold }
+  - { id: R6, if: [?x is young], then: ?x is blue }
+  - { id: R7, if: [?x is nice], then: ?x is blue }
+  - { id: R8, if: [?x is blue, ?x is cold], then: ?x is big }
+  - { id: R9, if: [?x is blue, ?x is big], then: ?x is young }
+
+facts:
+  - anne is red
+  - anne is young
+  - bob is blue
+  - bob is young
+  - dave is blue
+  - erin is big
+  - erin is young
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [anne is young, erin is young, bob is cold, bob is red, erin is cold, anne is big, dave is red, dave is furry]
+    expect_not: [anne is nice, dave is nice, bob is nice, erin is nice]

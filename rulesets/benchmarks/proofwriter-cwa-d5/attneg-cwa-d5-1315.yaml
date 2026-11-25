@@ -1,0 +1,42 @@
+id: attneg-cwa-d5-1315
+title: ProofWriter AttNeg-CWA-D5-1315
+description: "Anne is green. Anne is white. Bob is rough. Charlie is quiet. Charlie is red. Charlie is smart. Harry is furry. Harry is quiet. Harry is red. Harry is smart. Harry is white. Furry people are red. If someone is smart then they are green. Quiet people are green. Rough people are smart. Red, smart people are white. If Charlie is quiet then Charlie is furry. Green people are quiet. If someone is white and quiet then they are furry. If someone is quiet then they are furry."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-1315, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is furry], then: ?x is red }
+  - { id: R2, if: [?x is smart], then: ?x is green }
+  - { id: R3, if: [?x is quiet], then: ?x is green }
+  - { id: R4, if: [?x is rough], then: ?x is smart }
+  - { id: R5, if: [?x is red, ?x is smart], then: ?x is white }
+  - { id: R6, if: [charlie is quiet], then: charlie is furry }
+  - { id: R7, if: [?x is green], then: ?x is quiet }
+  - { id: R8, if: [?x is white, ?x is quiet], then: ?x is furry }
+  - { id: R9, if: [?x is quiet], then: ?x is furry }
+
+facts:
+  - anne is green
+  - anne is white
+  - bob is rough
+  - charlie is quiet
+  - charlie is red
+  - charlie is smart
+  - harry is furry
+  - harry is quiet
+  - harry is red
+  - harry is smart
+  - harry is white
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bob is rough, harry is red, bob is smart, bob is green, anne is furry, anne is red, bob is quiet, bob is furry, bob is red]
+    expect_not: [anne is smart, harry is rough, charlie is rough, anne is rough]

@@ -18,7 +18,8 @@
     "explain": "node src/cli.ts explain",
     "query": "node src/cli.ts query",
     "prompt": "node src/cli.ts prompt",
-    "bench": "node src/cli.ts bench"
+    "bench": "node src/cli.ts bench",
+    "import-proofwriter": "node src/cli.ts import-proofwriter"
   },
   "dependencies": {
     "@x-tech-laboratories/x-libs": "^0.75.0",

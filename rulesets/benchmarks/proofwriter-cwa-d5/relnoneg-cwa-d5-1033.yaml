@@ -1,0 +1,41 @@
+id: relnoneg-cwa-d5-1033
+title: ProofWriter RelNoneg-CWA-D5-1033
+description: "The bald eagle visits the dog. The bear likes the rabbit. The bear needs the dog. The bear needs the rabbit. The bear visits the bald eagle. The dog visits the bear. The rabbit likes the bald eagle. All round things are rough. If something visits the bald eagle and the bald eagle likes the bear then the bald eagle likes the dog. If something likes the bald eagle and the bald eagle visits the rabbit then the bald eagle is young. All rough, round things are big. If something likes the dog then the dog likes the bear. If something visits the bear then it is young. If something needs the bald eagle and it needs the rabbit then the rabbit is blue. If something is big then it needs the rabbit. If something visits the dog and the dog is young then the dog is round."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory RelNoneg-CWA-D5-1033, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+  likes: The subject likes the object.
+  needs: The subject needs the object.
+  visits: The subject visits the object.
+
+rules:
+  - { id: R1, if: [?x is round], then: ?x is rough }
+  - { id: R2, if: [?x visits bald_eagle, bald_eagle likes bear], then: bald_eagle likes dog }
+  - { id: R3, if: [?x likes bald_eagle, bald_eagle visits rabbit], then: bald_eagle is young }
+  - { id: R4, if: [?x is rough, ?x is round], then: ?x is big }
+  - { id: R5, if: [?x likes dog], then: dog likes bear }
+  - { id: R6, if: [?x visits bear], then: ?x is young }
+  - { id: R7, if: [?x needs bald_eagle, ?x needs rabbit], then: rabbit is blue }
+  - { id: R8, if: [?x is big], then: ?x needs rabbit }
+  - { id: R9, if: [?x visits dog, dog is young], then: dog is round }
+
+facts:
+  - bald_eagle visits dog
+  - bear likes rabbit
+  - bear needs dog
+  - bear needs rabbit
+  - bear visits bald_eagle
+  - dog visits bear
+  - rabbit likes bald_eagle
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [bear visits bald_eagle, dog is young, dog is round, dog is rough, dog is big, dog needs rabbit]
+    expect_not: [bald_eagle likes dog, rabbit is big, rabbit needs rabbit, bald_eagle is big, bald_eagle is young, bear is young, rabbit visits dog, bald_eagle is round, dog needs bald_eagle, rabbit needs bear, dog visits rabbit, bear is blue]

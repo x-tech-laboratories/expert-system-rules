@@ -1,0 +1,44 @@
+id: attnoneg-cwa-d5-1119
+title: ProofWriter AttNoneg-CWA-D5-1119
+description: "Anne is blue. Anne is cold. Anne is furry. Bob is furry. Bob is round. Fiona is blue. Fiona is cold. Fiona is furry. Fiona is kind. Fiona is rough. Fiona is round. Gary is blue. Gary is kind. Gary is rough. Kind things are cold. If something is red then it is kind. All rough things are round. If something is round and kind then it is red. All cold things are rough. If something is round then it is red. Rough, round things are blue. If something is kind then it is furry."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-1119, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is kind], then: ?x is cold }
+  - { id: R2, if: [?x is red], then: ?x is kind }
+  - { id: R3, if: [?x is rough], then: ?x is round }
+  - { id: R4, if: [?x is round, ?x is kind], then: ?x is red }
+  - { id: R5, if: [?x is cold], then: ?x is rough }
+  - { id: R6, if: [?x is round], then: ?x is red }
+  - { id: R7, if: [?x is rough, ?x is round], then: ?x is blue }
+  - { id: R8, if: [?x is kind], then: ?x is furry }
+
+facts:
+  - anne is blue
+  - anne is cold
+  - anne is furry
+  - bob is furry
+  - bob is round
+  - fiona is blue
+  - fiona is cold
+  - fiona is furry
+  - fiona is kind
+  - fiona is rough
+  - fiona is round
+  - gary is blue
+  - gary is kind
+  - gary is rough
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [fiona is kind, gary is kind, fiona is red, gary is furry, bob is kind, anne is red, bob is cold, bob is rough, bob is blue]
+    expect_not: []

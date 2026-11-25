@@ -1,0 +1,41 @@
+id: attneg-cwa-d5-376
+title: ProofWriter AttNeg-CWA-D5-376
+description: "Charlie is kind. Dave is blue. Dave is rough. Dave is white. Erin is blue. Erin is cold. Erin is rough. Gary is kind. Gary is round. Gary is white. All blue things are rough. All rough things are cold. If something is kind and round then it is blue. If Charlie is smart and Charlie is kind then Charlie is blue. White, rough things are kind. Cold things are kind. If Gary is smart and Gary is white then Gary is rough. All cold, rough things are white. If something is kind then it is round."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNeg-CWA-D5-376, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [?x is blue], then: ?x is rough }
+  - { id: R2, if: [?x is rough], then: ?x is cold }
+  - { id: R3, if: [?x is kind, ?x is round], then: ?x is blue }
+  - { id: R4, if: [charlie is smart, charlie is kind], then: charlie is blue }
+  - { id: R5, if: [?x is white, ?x is rough], then: ?x is kind }
+  - { id: R6, if: [?x is cold], then: ?x is kind }
+  - { id: R7, if: [gary is smart, gary is white], then: gary is rough }
+  - { id: R8, if: [?x is cold, ?x is rough], then: ?x is white }
+  - { id: R9, if: [?x is kind], then: ?x is round }
+
+facts:
+  - charlie is kind
+  - dave is blue
+  - dave is rough
+  - dave is white
+  - erin is blue
+  - erin is cold
+  - erin is rough
+  - gary is kind
+  - gary is round
+  - gary is white
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [erin is rough, erin is blue, erin is kind, charlie is round, erin is round, charlie is blue, charlie is rough, gary is cold, charlie is cold, charlie is white]
+    expect_not: [charlie is smart, gary is smart, dave is smart, erin is smart]

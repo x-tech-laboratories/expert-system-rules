@@ -1,0 +1,45 @@
+id: attnoneg-cwa-d5-921
+title: ProofWriter AttNoneg-CWA-D5-921
+description: "Anne is cold. Anne is furry. Anne is nice. Anne is red. Anne is white. Charlie is white. Fiona is cold. Fiona is furry. Fiona is nice. Fiona is red. Harry is big. Harry is furry. Harry is red. Harry is white. If Anne is big and Anne is round then Anne is furry. If something is furry then it is cold. All nice things are round. If Charlie is round then Charlie is big. If something is big and red then it is furry. If Charlie is white then Charlie is nice. If something is big and red then it is furry. All big things are furry. If something is round then it is nice."
+license: CC-BY-4.0
+tags: [benchmark, proofwriter, closed-world, adapted]
+source: >
+  Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
+  theory AttNoneg-CWA-D5-921, by the Allen Institute for AI, released under CC BY at https://allenai.org/data/proofwriter.
+  The description holds the theory's original English.
+
+relations:
+  is: The subject has this property.
+
+rules:
+  - { id: R1, if: [anne is big, anne is round], then: anne is furry }
+  - { id: R2, if: [?x is furry], then: ?x is cold }
+  - { id: R3, if: [?x is nice], then: ?x is round }
+  - { id: R4, if: [charlie is round], then: charlie is big }
+  - { id: R5, if: [?x is big, ?x is red], then: ?x is furry }
+  - { id: R6, if: [charlie is white], then: charlie is nice }
+  - { id: R7, if: [?x is big, ?x is red], then: ?x is furry }
+  - { id: R8, if: [?x is big], then: ?x is furry }
+  - { id: R9, if: [?x is round], then: ?x is nice }
+
+facts:
+  - anne is cold
+  - anne is furry
+  - anne is nice
+  - anne is red
+  - anne is white
+  - charlie is white
+  - fiona is cold
+  - fiona is furry
+  - fiona is nice
+  - fiona is red
+  - harry is big
+  - harry is furry
+  - harry is red
+  - harry is white
+
+cases:
+  - id: answers
+    note: ProofWriter's own answers to its questions about this theory.
+    expect: [anne is white, anne is furry, fiona is round, harry is cold, charlie is round, charlie is big, charlie is furry, charlie is cold]
+    expect_not: [harry is round, harry is nice, fiona is big, charlie is red, fiona is white, anne is big]
