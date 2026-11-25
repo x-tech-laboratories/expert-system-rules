@@ -89,7 +89,7 @@ describe("defaults and denials in the format", () => {
   it("refuses two defaults that override each other", () => {
     const text = birds.replace("{ id: D2, if: [?x is penguin], then: not ?x can fly }", "{ id: D2, if: [?x is penguin], then: not ?x can fly, usually: true }");
 
-    expect(problems_of(text)).toEqual(["a conclusion depends on its own negation, so the rules have no single answer"]);
+    expect(problems_of(text)).toEqual(["in case pingu, a conclusion depends on its own negation, so the rules have no single answer: not pingu can fly, pingu can fly"]);
   });
 
   it("takes the world of the whole rule set when a relation does not say", () => {

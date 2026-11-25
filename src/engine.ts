@@ -1,12 +1,32 @@
 // Forward chaining over triples, layer by layer so "not" is only read once settled, with a justification for every answer.
+// Rules layered by kind of triple run layer by layer; rules that only settle triple by triple run as filled-in rules in their order.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { condition_text, is_denial, is_open, is_variable, opposite, rule_text, triple_text, working_conditions, type Condition, type Rule, type RuleSet, type Triple } from "./rule_set.ts";
+import { ground_layers } from "./layers.ts";
+import type { RuleSet } from "./rule_set.ts";
+import { add, extend, holds, matches, ordered, type Match, type Store } from "./store.ts";
+import {
+  condition_text,
+  is_builtin,
+  is_denial,
+  is_ground,
+  is_open,
+  opposite,
+  rule_text,
+  substitute,
+  triple_text,
+  unify,
+  working_conditions,
+  type Bindings,
+  type Rule,
+  type Triple,
+} from "./terms.ts";
+
+export { holds } from "./store.ts";
+export { substitute, unify, type Bindings } from "./terms.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
-
-export type Bindings = Record<string, string>;
 
 export interface Reason {
   rule: Rule;
@@ -14,10 +34,8 @@ export interface Reason {
   absent: Triple[];
 }
 
-export interface Inference {
+export interface Inference extends Store {
   given: Set<string>;
-  holds: Set<string>;
-  by_relation: Map<string, Triple[]>;
   reasons: Map<string, Reason>;
   // Triples concluded both to hold and to be false.
   conflicts: Triple[];
@@ -25,77 +43,6 @@ export interface Inference {
 
 // What the engine says about a ground triple: it holds, it is false, or (in an open world) nothing settles it.
 export type Answer = true | false | "unknown";
-
-interface Match {
-  bindings: Bindings;
-  premises: Triple[];
-  absent: Triple[];
-}
-
-// ── Triples ──────────────────────────────────────────────────────────────────
-
-export function substitute(triple: Triple, bindings: Bindings): Triple {
-  const fill = (term: string) => (is_variable(term) ? (bindings[term] ?? term) : term);
-  return { subject: fill(triple.subject), relation: triple.relation, object: fill(triple.object) };
-}
-
-function is_ground(triple: Triple): boolean {
-  return !is_variable(triple.subject) && !is_variable(triple.object);
-}
-
-// Extends the bindings so the pattern equals the fact, or gives null when it cannot.
-export function unify(pattern: Triple, fact: Triple, bindings: Bindings): Bindings | null {
-  if (pattern.relation !== fact.relation) return null;
-  const next = { ...bindings };
-  for (const [term, value] of [[pattern.subject, fact.subject], [pattern.object, fact.object]]) {
-    if (!is_variable(term)) {
-      if (term !== value) return null;
-    } else if (term in next) {
-      if (next[term] !== value) return null;
-    } else next[term] = value;
-  }
-  return next;
-}
-
-function add(inference: Inference, triple: Triple): boolean {
-  const key = triple_text(triple);
-  if (inference.holds.has(key)) return false;
-  inference.holds.add(key);
-  const list = inference.by_relation.get(triple.relation) ?? [];
-  list.push(triple);
-  inference.by_relation.set(triple.relation, list);
-  return true;
-}
-
-export function holds(inference: Inference, triple: Triple): boolean {
-  return inference.holds.has(triple_text(triple));
-}
-
-// ── Matching ─────────────────────────────────────────────────────────────────
-
-// Conditions without "not" go first, so every negated one is fully filled in when it is read.
-function ordered(conditions: Condition[]): Condition[] {
-  return [...conditions.filter(condition => !condition.negated), ...conditions.filter(condition => condition.negated)];
-}
-
-function extend(inference: Inference, condition: Condition, match: Match): Match[] {
-  if (condition.negated) {
-    const wanted = substitute(condition, match.bindings);
-    return holds(inference, wanted) ? [] : [{ ...match, absent: [...match.absent, wanted] }];
-  }
-  const found: Match[] = [];
-  for (const fact of inference.by_relation.get(condition.relation) ?? []) {
-    const bindings = unify(condition, fact, match.bindings);
-    if (bindings) found.push({ bindings, premises: [...match.premises, fact], absent: match.absent });
-  }
-  return found;
-}
-
-function matches(inference: Inference, conditions: Condition[], start: Bindings = {}): Match[] {
-  let current: Match[] = [{ bindings: start, premises: [], absent: [] }];
-  for (const condition of ordered(conditions)) current = current.flatMap(match => extend(inference, condition, match));
-  return current;
-}
 
 // ── Inference ────────────────────────────────────────────────────────────────
 
@@ -106,26 +53,50 @@ export function infer(rule_set: RuleSet, extra_facts: Triple[] = []): Inference 
     inference.given.add(triple_text(fact));
   }
 
-  const top = Math.max(0, ...rule_set.rule_strata.values());
+  if (rule_set.rule_strata) run_layers(rule_set.rules, rule_set.rule_strata, inference);
+  else run_ground(rule_set, inference);
+  for (const list of inference.by_relation.values()) {
+    for (const triple of list) if (!is_denial(triple) && holds(inference, opposite(triple))) inference.conflicts.push(triple);
+  }
+  return inference;
+}
+
+function conclude(inference: Inference, rule: Rule, conclusion: Triple, premises: Triple[], absent: Triple[]): boolean {
+  if (!add(inference, conclusion)) return false;
+  inference.reasons.set(triple_text(conclusion), { rule, premises, absent });
+  return true;
+}
+
+function run_layers(rules: Rule[], rule_strata: Map<string, number>, inference: Inference): void {
+  const top = Math.max(0, ...rule_strata.values());
   for (let stratum = 0; stratum <= top; stratum++) {
-    const layer = rule_set.rules.filter(rule => rule_set.rule_strata.get(rule.id) === stratum);
+    const layer = rules.filter(rule => rule_strata.get(rule.id) === stratum);
     let changed = true;
     while (changed) {
       changed = false;
       for (const rule of layer) {
         for (const match of matches(inference, working_conditions(rule))) {
-          const conclusion = substitute(rule.conclusion, match.bindings);
-          if (!add(inference, conclusion)) continue;
-          inference.reasons.set(triple_text(conclusion), { rule, premises: match.premises, absent: match.absent });
-          changed = true;
+          if (conclude(inference, rule, substitute(rule.conclusion, match.bindings), match.premises, match.absent)) changed = true;
         }
       }
     }
   }
-  for (const list of inference.by_relation.values()) {
-    for (const triple of list) if (!is_denial(triple) && holds(inference, opposite(triple))) inference.conflicts.push(triple);
+}
+
+// Runs the filled-in rules group by group; a "not" only reads triples of earlier groups, which are settled.
+function run_ground(rule_set: RuleSet, inference: Inference): void {
+  const plan = ground_layers(rule_set.rules, [...inference.by_relation.values()].flat());
+  if (!plan.groups) throw new Error(`${rule_set.id}: with these facts a conclusion depends on its own negation: ${plan.loop.join(", ")}`);
+  for (const group of plan.groups) {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const instance of group) {
+        if (!instance.premises.every(premise => holds(inference, premise)) || instance.absent.some(missing => holds(inference, missing))) continue;
+        if (conclude(inference, instance.rule, instance.head, instance.premises, instance.absent)) changed = true;
+      }
+    }
   }
-  return inference;
 }
 
 // True when the triple holds; false when it is denied, or missing from a closed world; unknown when missing from an open one.
@@ -177,6 +148,10 @@ export function explain(rule_set: RuleSet, inference: Inference, triple: Triple,
         continue;
       }
       const blocking = substitute(condition, current[0].bindings);
+      if (is_builtin(condition.relation)) {
+        lines.push(`${pad}  ${rule.id} fails at ${condition_text({ ...blocking, negated: condition.negated })}, which is false`);
+        break;
+      }
       const overridden = rule.usually && condition.negated && triple_text(blocking) === triple_text(opposite(substitute(rule.conclusion, current[0].bindings)));
       if (overridden) lines.push(`${pad}  ${rule.id} usually concludes it, but the exception "${triple_text(blocking)}" holds`);
       else {

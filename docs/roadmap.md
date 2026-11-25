@@ -28,7 +28,8 @@ part; the work is in verifying, scoping and governing them.
    importing only a rule set's conclusions rather than all its rules.
 5. **Defaults and exceptions.** Done: `usually` rules give way to `not` conclusions (see
    [format.md](format.md#defaults-and-exceptions)). Still to come: preferring the more specific of two
-   defaults that override each other, and a `certainty` for rules that hold only some of the time.
+   defaults that override each other for the same individual, and a `certainty` for rules that hold
+   only some of the time.
 6. **More collections.** ProofWriter is converted; ATOMIC, ConceptNet and OpenCyc follow, as planned in
    [porting.md](porting.md).
 7. **Facts from Wikidata.** Triples already match Wikidata's statements and the core vocabulary names
@@ -37,13 +38,13 @@ part; the work is in verifying, scoping and governing them.
    times out and its data changes, and keep the rules here. Coverage is uneven, so a missing
    statement must read as unknown, not false (item 10), and `not` should only read facts curated
    here. Qualifiers can carry relationships with more than two parts.
-8. **Numbers.** The common-sense rule sets compare and order things without arithmetic. Built-in
-   relations such as `less_than` and `plus` would let rules work with real quantities, dates and
-   unit conversions. Wikidata's quantities come with a unit (an item) and upper and lower bounds, so
-   numbers need unit normalisation and ranges as well.
-9. **Per-individual layering.** The check that refuses rules looping through `not` works on kinds of
-   triples, so it refuses some rule sets that only loop for different individuals (71 of about 15,000
-   ProofWriter theories). Checking each individual (local stratification) would accept them.
+8. **Numbers.** Done for comparisons (`less_than`, `greater_than`, `at_most`, `at_least`,
+   `equal_to`; see [format.md](format.md#numbers)). Still to come: arithmetic such as `plus`, dates,
+   and units: Wikidata's quantities come with a unit (an item) and upper and lower bounds, so numbers
+   need unit normalisation and ranges as well.
+9. **Per-individual layering.** Done: rules that only loop through `not` for different individuals
+   are layered triple by triple, which accepts all 15,275 closed-world ProofWriter test theories
+   (71 were refused before) and lets opposite defaults apply to different kinds.
 10. **An "unknown" answer.** Done: relations marked `world: open` (facts from Wikidata belong there)
    answer true, false or unknown, and `not` may not read them. Still to come: an open-world `bench`
    run, since models tend to answer false where the honest answer is unknown.

@@ -46,20 +46,20 @@ since the engine fills in variables from conditions without `not`; no theory in 
 
 | File | Theories | Fully reproduced | Refused | Answers matching ProofWriter |
 | --- | --- | --- | --- | --- |
-| depth-0 | 5397 | 5380 | 17 | 18886 / 18886 |
-| depth-1 | 2613 | 2608 | 5 | 17589 / 17589 |
-| depth-2 | 1815 | 1803 | 12 | 16413 / 16413 |
-| depth-3 | 1430 | 1418 | 12 | 16499 / 16499 |
-| depth-3ext | 2413 | 2397 | 16 | 21798 / 21798 |
-| depth-5 | 985 | 976 | 9 | 16277 / 16277 |
+| depth-0 | 5397 | 5397 | 0 | 18949 / 18949 |
+| depth-1 | 2613 | 2613 | 0 | 17624 / 17624 |
+| depth-2 | 1815 | 1815 | 0 | 16535 / 16535 |
+| depth-3 | 1430 | 1430 | 0 | 16642 / 16642 |
+| depth-3ext | 2413 | 2413 | 0 | 21967 / 21967 |
+| depth-5 | 985 | 985 | 0 | 16430 / 16430 |
 | birds-electricity | 140 | 140 | 0 | 2635 / 2635 |
 | NatLang | 482 | 482 | 0 | 6670 / 6670 |
 
-Not one answer differs, which is independent evidence that the engine is right. The 71 refused
-theories (0.5%) are not wrong answers: the engine declines them. Its layering check groups triples by
-subject, relation and object, and cannot see that a rule like "if Gary is not green then Gary is
-quiet" only loops back through rules that pass along the *same* individual. Accepting them needs a
-per-individual check ("local stratification"), listed on the [roadmap](roadmap.md).
+Not one of the 117,452 answers differs, which is independent evidence that the engine is right.
+Before per-individual layering, 71 theories (0.5%) were refused: the layering check grouped triples
+by kind and could not see that a rule like "if Gary is not green then Gary is quiet" only loops back
+through rules that pass along the *same* individual. The engine now falls back to layering the
+filled-in rules triple by triple ("local stratification") and accepts every theory.
 
 The repository keeps a sample of 50 depth-5 theories, every 20th of the test file, in
 `rulesets/benchmarks/proofwriter-cwa-d5/`. Regenerate or widen it with the command above.
