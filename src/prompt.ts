@@ -3,7 +3,7 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import type { Answer } from "./engine.ts";
-import { is_denial, rule_text, triple_text, type Case, type RuleSet, type Triple } from "./rule_set.ts";
+import { builtins, is_builtin, is_denial, rule_text, triple_text, type Case, type RuleSet, type Triple } from "./rule_set.ts";
 
 // ── Questions ────────────────────────────────────────────────────────────────
 
@@ -42,6 +42,9 @@ export function build_prompt(rule_set: RuleSet): string {
           "'not x' as a fact, or 'THEN NOT x' as a conclusion, means x is false.",
           "'THEN USUALLY x' is a default: x follows unless 'not x' is concluded; then x does not hold.",
         ]
+      : []),
+    ...(rule_set.rules.some(rule => rule.conditions.some(condition => is_builtin(condition.relation)))
+      ? [`${[...builtins.keys()].join(", ")} compare two numbers, and are true or false by arithmetic alone.`]
       : []),
     ...(open
       ? [

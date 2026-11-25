@@ -64,8 +64,8 @@ describe("parse_rule_set", () => {
       .replace("expect: [tea in kitchen]", "expect: [tea]");
 
     expect(problems_of(text)).toEqual([
-      `fact 1: "Cup" must be a lower_snake_case name`,
-      `fact 1: "?kitchen" must be a lower_snake_case name`,
+      `fact 1: "Cup" must be a lower_snake_case name or a number`,
+      `fact 1: "?kitchen" must be a lower_snake_case name or a number`,
       `rule B condition 2 must be "subject relation object", optionally after "not", not "never ?x is ice"`,
       `case 7 expect 1 must be "subject relation object", not "tea"`,
       `the relation "near" is used but not listed under "relations" or in a vocabulary`,
@@ -75,13 +75,13 @@ describe("parse_rule_set", () => {
   it("refuses variables that only a negation or the conclusion would fill in", () => {
     const text = valid.replace("{ id: B, if: [?x is wet, not ?x is ice], then: ?x is water }", "{ id: B, if: [not ?y is ice], then: ?z is water }");
 
-    expect(problems_of(text)).toEqual([`rule B: ?z must appear in a condition without "not"`, `rule B: ?y must appear in a condition without "not"`]);
+    expect(problems_of(text)).toEqual([`rule B: ?z must appear in a condition without "not" that is not a comparison`, `rule B: ?y must appear in a condition without "not" that is not a comparison`]);
   });
 
   it("refuses a conclusion that depends on its own negation", () => {
     const text = valid.replace("{ id: A, if: [?x is wet, ?x is cold], then: ?x is ice }", "{ id: A, if: [?x is wet, not ?x is water], then: ?x is ice }");
 
-    expect(problems_of(text)).toContain("a conclusion depends on its own negation, so the rules have no single answer");
+    expect(problems_of(text)).toEqual(["in case frozen, a conclusion depends on its own negation, so the rules have no single answer: pond is ice, pond is water"]);
   });
 
   it("refuses duplicate ids, empty rules and cases without questions", () => {

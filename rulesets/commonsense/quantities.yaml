@@ -1,10 +1,11 @@
 id: quantities
 title: Sizes, weights and units
 description: >
-  Comparing things without numbers: size classes put things in order, bigger and heavier chain
-  through each other, small things fit inside big open containers, and units compare only with
-  units that measure the same thing.
-version: 1.0.0
+  Comparing things with and without numbers: size classes put things in order, bigger and heavier
+  chain through each other, small things fit inside big open containers, units compare only with
+  units that measure the same thing, and measured weights, ages and temperatures are compared as
+  numbers.
+version: 1.1.0
 license: CC-BY-SA-4.0
 tags: [commonsense, quantities, units, transitivity, negation, trap-cases, original]
 source: Original to this repository.
@@ -18,6 +19,9 @@ relations:
   fits_in: The subject can be put inside the object.
   larger_unit_than: The subject unit is a larger amount than the object unit.
   measures: The subject unit measures this kind of quantity.
+  weight_kg: The subject weighs this many kilograms.
+  age_years: The subject person is this many years old.
+  temperature_c: The subject is at this temperature in degrees Celsius.
   comparable_with: The subject and object units measure the same kind of quantity.
 
 rules:
@@ -28,6 +32,10 @@ rules:
   - { id: Q5, if: [?c is container, ?c bigger_than ?x, not ?c is closed, not ?c is full], then: ?x fits_in ?c }
   - { id: Q6, if: [?u measures ?q, ?v measures ?q], then: ?u comparable_with ?v }
   - { id: Q7, if: [?a larger_unit_than ?b, ?b larger_unit_than ?c], then: ?a larger_unit_than ?c }
+  - { id: Q8, if: [?x weight_kg ?a, ?y weight_kg ?b, ?a greater_than ?b], then: ?x heavier_than ?y }
+  - { id: Q9, if: [?p age_years ?n, ?n less_than 18], then: ?p is minor }
+  - { id: Q10, if: [?p age_years ?n, ?n at_least 18], then: ?p is adult }
+  - { id: Q11, if: [?x is water, ?x temperature_c ?t, ?t at_most 0], then: ?x is frozen }
 
 facts:
   - huge larger_class_than large
@@ -72,3 +80,17 @@ cases:
   - id: units
     expect: [kilometre larger_unit_than millimetre, hour larger_unit_than second, gram comparable_with kilogram, metre comparable_with millimetre]
     expect_not: [kilogram larger_unit_than metre, kilogram comparable_with metre, second larger_unit_than minute, hour comparable_with kilometre]
+  - id: weighed
+    note: Trap. 10 is more than 9 although "10" sorts before "9" as text; measured weights also chain with Q4.
+    facts: [kettle weight_kg 10, teapot weight_kg 9, suitcase weight_kg 23.5, kettle heavier_than mug]
+    expect: [kettle heavier_than teapot, suitcase heavier_than kettle, suitcase heavier_than mug]
+    expect_not: [teapot heavier_than kettle, kettle heavier_than kettle]
+  - id: ages
+    note: Trap at the boundary. Exactly 18 is adult, not minor.
+    facts: [ana age_years 17, ben age_years 18, cy age_years 40]
+    expect: [ana is minor, ben is adult, cy is adult]
+    expect_not: [ben is minor, ana is adult]
+  - id: below_zero
+    facts: [pond is water, pond temperature_c -4, kettle_water is water, kettle_water temperature_c 0.5, puddle is water, puddle temperature_c 0]
+    expect: [pond is frozen, puddle is frozen]
+    expect_not: [kettle_water is frozen]

@@ -18,7 +18,7 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | [Typical and exceptional](rulesets/commonsense/typical.yaml) | commonsense | 7 (+2 imported) | 6 | defaults and exceptions, open-world unknowns |
 | [Everyday physics](rulesets/commonsense/physics.yaml) | commonsense | 13 | 8 | support and falling, breaking, floating, melting, heat, fire |
 | [People, needs and manners](rulesets/commonsense/people.yaml) | commonsense | 11 | 7 | needs, wants, feelings, thanks, loans, safety |
-| [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 7 | 5 | size classes, bigger and heavier, what fits, comparable units |
+| [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 11 | 8 | size classes, bigger and heavier, what fits, comparable units, numbers |
 | [Everyday routines](rulesets/commonsense/routines.yaml) | commonsense | 5 | 7 | restaurant, fast food, doctor and train scripts |
 | [Time and order](rulesets/commonsense/time.yaml) | commonsense | 11 | 7 | days of the week, past and future, during, ages, impossible timelines |
 | [ProofWriter sample](rulesets/benchmarks/proofwriter-cwa-d5/) | benchmarks | 50 theories | 50 | generated reasoning puzzles with correct answers, converted from ProofWriter |
@@ -34,7 +34,8 @@ other ways to slice them. Rule sets can share the relations of a vocabulary such
 import other rule sets, such as the tree of kinds in `core/upper`. [catalog.yaml](catalog.yaml) lists
 the subject folders and tags. The format is described in [docs/format.md](docs/format.md), larger
 collections elsewhere are listed in [docs/sources.md](docs/sources.md), plans for porting them
-are in [docs/porting.md](docs/porting.md), and where the project is going is in
+are in [docs/porting.md](docs/porting.md), how models score is in
+[docs/benchmarks.md](docs/benchmarks.md), and where the project is going is in
 [docs/roadmap.md](docs/roadmap.md).
 
 A small example:

@@ -168,7 +168,7 @@ describe("import-proofwriter", () => {
     expect(result.code).toBe(1);
     expect(result.out).toContain("2 theories: 0 fully reproduced, 1 with different answers, 1 refused");
     expect(result.out).toContain("  RelNeg-CWA-D1-8: the engine disagrees with 1 of ProofWriter's 1 answers");
-    expect(result.out).toContain("  AttNeg-CWA-D1-9: a conclusion depends on its own negation, so the rules have no single answer");
+    expect(result.out).toContain("  AttNeg-CWA-D1-9: in case answers, a conclusion depends on its own negation, so the rules have no single answer: bald_eagle is red");
   });
 
   it("reports a theory that does not convert", async () => {

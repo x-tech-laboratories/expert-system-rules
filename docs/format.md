@@ -64,8 +64,25 @@ in before it is read.
 The engine runs rules in layers, so a `not` is only read once everything that could conclude it
 has run. Triples are grouped for this by relation and, when they are fixed, by subject and object
 too, so `?x is grounded` and `?x is flier` are separate, as are `cat visits mouse` and
-`rabbit visits mouse`. A rule set where a conclusion depends on its own
-negation has no single answer and is refused.
+`rabbit visits mouse`. When that is not enough, because rules loop through `not` for kinds that no
+single individual has at once (birds usually fly, mammals usually do not), the engine fills the
+rules in for the facts at hand and layers them triple by triple instead. A conclusion that depends on
+its own negation for the same individual has no single answer, and is refused, naming the triples.
+
+## Numbers
+
+Numbers are names too, including decimals and negatives (`23.5`, `-4`). Five built-in relations
+compare them in a rule's conditions: `less_than`, `greater_than`, `at_most`, `at_least` and
+`equal_to`. They need no entry under `relations`, cannot be stated as facts or concluded, and both
+sides must be filled in by other conditions first. A side that is not a number makes the comparison
+false; `not` in front of one negates it.
+
+```yaml
+- { id: Q8, if: [?x weight_kg ?a, ?y weight_kg ?b, ?a greater_than ?b], then: ?x heavier_than ?y }
+- { id: Q9, if: [?p age_years ?n, ?n less_than 18], then: ?p is minor }
+```
+
+Units are part of the relation's name and meaning (`weight_kg`) until the engine converts them.
 
 ## Defaults and exceptions
 
@@ -79,9 +96,10 @@ and means the triple is false, not merely unconcluded:
 ```
 
 A penguin is a bird, so T1 would conclude that it flies, but T2 concludes it does not, so T1 gives
-way. An exception can itself be a default. Two defaults that override each other on the same kind
-of triple (birds usually fly, penguins usually do not) are refused for now, since neither can be put
-first; make the more specific one strict. A strict rule and a denial concluding opposite things about
+way. An exception can itself be a default. Opposite defaults for different kinds are fine as long
+as no individual is both (birds usually fly, mammals usually do not); for one that is both (penguins
+usually do not fly, but a penguin is a bird) neither can be put first and the case is refused, so
+make the more specific one strict. A strict rule and a denial concluding opposite things about
 the same triple is a conflict, and `npm run check` fails the case.
 
 ## Closed and open worlds
