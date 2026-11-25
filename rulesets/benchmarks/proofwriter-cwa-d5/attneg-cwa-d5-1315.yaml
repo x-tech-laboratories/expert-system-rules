@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-1315
 title: ProofWriter AttNeg-CWA-D5-1315
 description: "Anne is green. Anne is white. Bob is rough. Charlie is quiet. Charlie is red. Charlie is smart. Harry is furry. Harry is quiet. Harry is red. Harry is smart. Harry is white. Furry people are red. If someone is smart then they are green. Quiet people are green. Rough people are smart. Red, smart people are white. If Charlie is quiet then Charlie is furry. Green people are quiet. If someone is white and quiet then they are furry. If someone is quiet then they are furry."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

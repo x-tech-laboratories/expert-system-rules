@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-197
 title: ProofWriter RelNoneg-CWA-D5-197
 description: "The bald eagle sees the cow. The bald eagle sees the tiger. The cow chases the tiger. The cow is round. The cow likes the mouse. The cow sees the tiger. The mouse chases the bald eagle. The mouse likes the tiger. The mouse sees the cow. The tiger chases the bald eagle. The tiger likes the cow. If something is kind then it chases the mouse. If something chases the cow then the cow chases the bald eagle. If something likes the tiger and the tiger is kind then the tiger chases the cow. If something chases the bald eagle then the bald eagle likes the cow. If something is rough then it is kind. If something chases the bald eagle then it is young. If something likes the tiger then the tiger is rough. If something likes the bald eagle and the bald eagle sees the cow then the bald eagle likes the mouse. If something is red and it sees the cow then it chases the cow."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

@@ -13,7 +13,8 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | Rule set | Folder | Rules | Cases | Kind |
 | --- | --- | --- | --- | --- |
 | [Animal identification](rulesets/animals/animal-identification.yaml) | animals | 15 | 11 | classification, adapted from a textbook example |
-| [Kitchen common sense](rulesets/commonsense/kitchen.yaml) | commonsense | 8 | 5 | kinds of food, where things are, what spoils |
+| [Upper kinds](rulesets/core/upper.yaml) | core | 2 | 2 | the shallow tree of kinds other rule sets import |
+| [Kitchen common sense](rulesets/commonsense/kitchen.yaml) | commonsense | 7 (+2 imported) | 5 | kinds of food, where things are, what spoils |
 | [Everyday physics](rulesets/commonsense/physics.yaml) | commonsense | 13 | 8 | support and falling, breaking, floating, melting, heat, fire |
 | [People, needs and manners](rulesets/commonsense/people.yaml) | commonsense | 11 | 7 | needs, wants, feelings, thanks, loans, safety |
 | [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 7 | 5 | size classes, bigger and heavier, what fits, comparable units |
@@ -27,7 +28,10 @@ Facts are triples, `subject relation object`, the same shape as a Wikidata state
 join them through `?variables`, so a rule set can describe many things and how they relate. One
 file holds one rule set: its relations, facts, rules and cases belong together, since a `not`
 condition reads the whole set. Files sit in a folder per subject, and `tags` in each file mark the
-other ways to slice them. The format is described in [docs/format.md](docs/format.md), larger
+other ways to slice them. Rule sets can share the relations of a vocabulary such as
+[vocabularies/core.yaml](vocabularies/core.yaml), whose relations map to Wikidata properties, and
+import other rule sets, such as the tree of kinds in `core/upper`. [catalog.yaml](catalog.yaml) lists
+the subject folders and tags. The format is described in [docs/format.md](docs/format.md), larger
 collections elsewhere are listed in [docs/sources.md](docs/sources.md), plans for porting them
 are in [docs/porting.md](docs/porting.md), and where the project is going is in
 [docs/roadmap.md](docs/roadmap.md).
@@ -75,14 +79,16 @@ from its output, so it works with any model that has a command line, such as `cl
 
 ## Contributing a rule set
 
-Add a YAML file under the subject's folder in `rulesets/`, with test cases that list what must
-hold under `expect` and what must not under `expect_not`, and run `npm run check`. The tests fail if a rule set does not load or
-a case disagrees with the engine. Say in `source` where the rules come from, and in `license` what
-they are licensed under.
+Add a YAML file named after its `id` under the subject's folder in `rulesets/`, with test cases
+that list what must hold under `expect` and what must not under `expect_not`, and run
+`npm run check`. The tests fail if a rule set does not load, a case disagrees with the engine, or
+its folder or tags are not in [catalog.yaml](catalog.yaml). Say in `source` where the rules come
+from, in `license` what they are licensed under, and in `method` how they were written. Use the
+core vocabulary's relations where they fit rather than defining your own.
 
 ## License
 
-- **Rule sets** in `rulesets/` are licensed under
+- **Rule sets** in `rulesets/`, the vocabularies in `vocabularies/` and `catalog.yaml` are licensed under
   [Creative Commons Attribution-ShareAlike 4.0 International](LICENSES/CC-BY-SA-4.0.txt)
   (`CC-BY-SA-4.0`), unless the file's own `license` field names another licence.
 - **Some rule sets are adapted from, or describe, other people's work and may carry other licences

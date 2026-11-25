@@ -3,6 +3,7 @@ title: Car won't start
 description: >
   A small diagnostic rule set for a car that will not start, chaining from what the driver
   notices to a likely cause and a next step. Illustrative only, not mechanical advice.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [diagnosis, negation, trap-cases, original]
 source: Original to this repository.

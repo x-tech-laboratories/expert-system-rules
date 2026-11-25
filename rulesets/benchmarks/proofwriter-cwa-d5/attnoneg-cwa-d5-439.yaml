@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-439
 title: ProofWriter AttNoneg-CWA-D5-439
 description: "Anne is furry. Anne is rough. Anne is white. Bob is nice. Bob is rough. Bob is white. Dave is rough. Dave is white. Fiona is furry. Fiona is quiet. All quiet, red people are furry. If Dave is green and Dave is nice then Dave is red. If Fiona is white and Fiona is green then Fiona is quiet. All nice people are furry. If someone is furry then they are green. If someone is furry and quiet then they are nice. If someone is green then they are quiet. All rough people are furry."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

@@ -1,7 +1,9 @@
 id: attnoneg-cwa-d5-286
 title: ProofWriter AttNoneg-CWA-D5-286
 description: "Anne is green. Anne is quiet. Anne is white. Bob is big. Bob is cold. Bob is kind. Bob is white. Dave is big. Dave is quiet. Harry is nice. All green things are kind. If something is quiet and green then it is white. If Dave is big then Dave is cold. If Harry is nice then Harry is green. Green, cold things are quiet. All green, kind things are quiet. White things are big. All green, big things are nice."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

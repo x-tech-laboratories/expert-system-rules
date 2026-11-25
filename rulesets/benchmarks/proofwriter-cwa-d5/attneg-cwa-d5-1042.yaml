@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-1042
 title: ProofWriter AttNeg-CWA-D5-1042
 description: "Anne is cold. Anne is furry. Anne is quiet. Anne is white. Anne is young. Bob is green. Bob is young. Charlie is blue. Charlie is cold. Erin is green. Erin is quiet. If something is cold then it is blue. All young, furry things are blue. White, quiet things are blue. All cold, furry things are white. Quiet things are furry. All young things are quiet. If Erin is young then Erin is cold. Blue things are cold. If something is white and not cold then it is green."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

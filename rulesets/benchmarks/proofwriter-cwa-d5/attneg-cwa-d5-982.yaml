@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-982
 title: ProofWriter AttNeg-CWA-D5-982
 description: "Bob is furry. Bob is white. Charlie is smart. Gary is white. Harry is blue. Harry is furry. Harry is green. Harry is red. Harry is smart. Harry is young. Smart people are blue. If someone is green and red then they are blue. All young, furry people are blue. Blue people are smart. All white people are green. If someone is white and green then they are young. If someone is young then they are red. If Harry is furry and Harry is smart then Harry is young."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

@@ -3,6 +3,7 @@ title: Creature licensing
 description: >
   Fictional creatures licensed for export. Several cases are traps where the rules
   contradict real-world knowledge, to see whether a model follows the rules or its priors.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [licensing, negation, trap-cases, original]
 source: Original to this repository.

@@ -4,6 +4,7 @@ description: >
   Everyday reasoning about when things happen: the order of the days of one week, what is past or
   still to come relative to now, events that happen during other events, who is older, and timelines
   that contradict themselves. It works with order, not clock arithmetic.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, time, transitivity, trap-cases, original]
 source: Original to this repository.

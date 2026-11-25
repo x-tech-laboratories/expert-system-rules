@@ -11,6 +11,7 @@ const rule_set = parse_rule_set(
   `
 id: birds
 title: Birds
+version: 1.0.0
 license: CC-BY-SA-4.0
 source: Test.
 relations:

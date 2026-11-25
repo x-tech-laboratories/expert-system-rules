@@ -4,6 +4,7 @@ description: >
   How things behave around the house: something unsupported falls and takes what is on it along,
   fragile things break unless they land on something soft, things float when lighter than water,
   ice melts somewhere warm, metal touching something hot gets hot, and flammable things near fire burn.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, physics, causation, negation, trap-cases, original]
 source: Original to this repository.

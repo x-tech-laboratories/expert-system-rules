@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-691
 title: ProofWriter AttNeg-CWA-D5-691
 description: "Bob is cold. Dave is blue. Dave is cold. Dave is furry. Dave is kind. Dave is rough. Dave is young. Gary is kind. Gary is rough. Harry is furry. Harry is kind. All nice things are furry. If something is rough and not blue then it is furry. All kind, furry things are rough. Furry, nice things are young. All young things are nice. Cold things are nice. Nice, young things are kind."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

@@ -1,7 +1,9 @@
 id: relneg-cwa-d5-562
 title: ProofWriter RelNeg-CWA-D5-562
 description: "The cat sees the cow. The cat sees the mouse. The cow likes the dog. The cow likes the mouse. The cow sees the dog. The dog is blue. The dog is nice. The dog likes the mouse. The mouse is green. The mouse needs the cat. If someone sees the dog and they do not like the cow then they are nice. If someone needs the dog and the dog is kind then they like the dog. If someone is nice and they do not like the cow then they need the mouse. If someone needs the mouse and they are not blue then the mouse sees the dog. If someone likes the cow and they are not nice then they are green. If someone needs the cow and they are not green then they are big."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

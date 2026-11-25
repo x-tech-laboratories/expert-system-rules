@@ -4,6 +4,7 @@ description: >
   Comparing things without numbers: size classes put things in order, bigger and heavier chain
   through each other, small things fit inside big open containers, and units compare only with
   units that measure the same thing.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, quantities, units, transitivity, negation, trap-cases, original]
 source: Original to this repository.

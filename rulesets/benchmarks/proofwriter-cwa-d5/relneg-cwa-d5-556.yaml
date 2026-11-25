@@ -1,7 +1,9 @@
 id: relneg-cwa-d5-556
 title: ProofWriter RelNeg-CWA-D5-556
 description: "The bald eagle eats the bear. The bald eagle is cold. The bear is big. The bear sees the bald eagle. The bear sees the squirrel. The squirrel sees the bear. The squirrel sees the tiger. The tiger chases the bald eagle. The tiger eats the bald eagle. The tiger eats the squirrel. The tiger is cold. The tiger sees the bear. If someone chases the bear then the bear is round. If someone chases the tiger then they chase the squirrel. If someone is big then they chase the squirrel. If the tiger chases the bear and the bear sees the bald eagle then the tiger is round. If someone eats the bald eagle then they eat the squirrel. If someone eats the bear then they eat the tiger. If someone is round then they chase the bear. If the bear is big and the bear chases the squirrel then the squirrel is round. If the squirrel eats the bald eagle then the bald eagle is cold."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

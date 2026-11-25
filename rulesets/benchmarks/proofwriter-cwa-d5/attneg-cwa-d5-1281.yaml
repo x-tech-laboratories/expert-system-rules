@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-1281
 title: ProofWriter AttNeg-CWA-D5-1281
 description: "Anne is furry. Anne is rough. Anne is smart. Dave is rough. Erin is round. Erin is smart. Harry is nice. If someone is smart and rough then they are nice. If someone is round then they are furry. All big people are smart. All furry people are big. Nice people are big. If Dave is rough then Dave is round. If someone is smart then they are rough."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

@@ -1,23 +1,23 @@
 id: kitchen
 title: Kitchen common sense
 description: >
-  Everyday reasoning about kinds of food and where things are: a kind of a kind is still a kind,
+  Everyday reasoning about kinds of food (placed in the shared tree of kinds by importing core/upper) and where things are: a kind of a kind is still a kind,
   something inside something inside a room is in that room, cold places keep things cold, and
   perishable food left somewhere warm is at risk of spoiling.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [commonsense, taxonomy, location, negation, original]
 source: Original to this repository.
+vocabularies: [core]
+imports: [core/upper]
 
 relations:
-  is_a: The subject is an instance of this kind.
-  subclass_of: Every instance of the subject kind is also of this kind.
   stored_in: The subject is put directly inside this container or place.
   "on": The subject rests directly on top of this.
   in: The subject is somewhere inside this, directly or through other containers.
   is: The subject has this property.
 
 rules:
-  - { id: K1, if: [?x is_a ?kind, ?kind subclass_of ?wider], then: ?x is_a ?wider }
   - { id: K2, if: [?x stored_in ?place], then: ?x in ?place }
   - { id: K3, if: [?x on ?surface, ?surface in ?room], then: ?x in ?room }
   - { id: K4, if: [?x in ?inner, ?inner in ?outer], then: ?x in ?outer }
@@ -35,6 +35,8 @@ facts:
   - baked_good subclass_of food
   - fridge is_a refrigerator
   - refrigerator subclass_of appliance
+  - appliance subclass_of artifact
+  - food subclass_of substance
   - fridge in kitchen
   - counter in kitchen
   - kitchen in house
@@ -42,7 +44,7 @@ facts:
 cases:
   - id: milk_in_fridge
     facts: [milk stored_in fridge]
-    expect: [milk in kitchen, milk in house, milk is cold, milk is_a food, fridge is_a appliance]
+    expect: [milk in kitchen, milk in house, milk is cold, milk is_a food, fridge is_a appliance, milk is_a physical_object, fridge is_a artifact]
     expect_not: [milk is at_risk_of_spoiling]
   - id: milk_on_counter
     facts: [milk on counter]

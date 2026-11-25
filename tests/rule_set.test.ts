@@ -12,6 +12,7 @@ import { list_rule_set_files, parse_rule_set, parse_triple, rule_text, RuleSetEr
 const valid = `
 id: tiny
 title: Tiny
+version: 1.0.0
 license: CC-BY-SA-4.0
 source: Test.
 tags: [test]
@@ -67,7 +68,7 @@ describe("parse_rule_set", () => {
       `fact 1: "?kitchen" must be a lower_snake_case name`,
       `rule B condition 2 must be "subject relation object", optionally after "not", not "never ?x is ice"`,
       `case 7 expect 1 must be "subject relation object", not "tea"`,
-      `the relation "near" is used but not listed under "relations"`,
+      `the relation "near" is used but not listed under "relations" or in a vocabulary`,
     ]);
   });
 
@@ -105,6 +106,7 @@ cases:
 `;
 
     expect(problems_of(text)).toEqual([
+      `"version" must be a non-empty string`,
       `relation "Bad-Name" must be lower_snake_case`,
       `relation "Bad-Name" needs a meaning`,
       "fact must be a list",
@@ -123,6 +125,7 @@ cases:
   it("refuses missing top-level fields and non-mappings", () => {
     expect(problems_of("id: x\nrules: nope\ncases: nope\nrelations: []")).toEqual([
       `"title" must be a non-empty string`,
+      `"version" must be a non-empty string`,
       `"license" must be a non-empty string`,
       `"source" must be a non-empty string`,
       `"relations" must map each relation name to what it means`,
@@ -157,12 +160,13 @@ describe("parse_triple", () => {
 
 describe("stratify", () => {
   const triple = (text: string) => parse_triple(text);
+  const meta = { source: "", method: "hand_written", note: "", from: "" };
 
   it("separates kinds by their fixed object and allows positive loops", () => {
     const rules = [
-      { id: "1", conditions: [{ ...triple("?x is a"), negated: false }], conclusion: triple("?x is b") },
-      { id: "2", conditions: [{ ...triple("?x is b"), negated: false }], conclusion: triple("?x is a") },
-      { id: "3", conditions: [{ ...triple("?x is a"), negated: false }, { ...triple("?x is b"), negated: true }], conclusion: triple("?x is c") },
+      { id: "1", conditions: [{ ...triple("?x is a"), negated: false }], ...meta, conclusion: triple("?x is b") },
+      { id: "2", conditions: [{ ...triple("?x is b"), negated: false }], ...meta, conclusion: triple("?x is a") },
+      { id: "3", conditions: [{ ...triple("?x is a"), negated: false }, { ...triple("?x is b"), negated: true }], ...meta, conclusion: triple("?x is c") },
     ];
 
     expect(stratify(rules, [triple("seed is a")])).toEqual(new Map([["1", 0], ["2", 0], ["3", 1]]));
@@ -170,15 +174,15 @@ describe("stratify", () => {
 
   it("separates kinds by their fixed subject too", () => {
     const rules = [
-      { id: "1", conditions: [{ ...triple("rabbit is a"), negated: false }], conclusion: triple("rabbit is b") },
-      { id: "2", conditions: [{ ...triple("rabbit is b"), negated: false }, { ...triple("cat is b"), negated: true }], conclusion: triple("rabbit is a") },
+      { id: "1", conditions: [{ ...triple("rabbit is a"), negated: false }], ...meta, conclusion: triple("rabbit is b") },
+      { id: "2", conditions: [{ ...triple("rabbit is b"), negated: false }, { ...triple("cat is b"), negated: true }], ...meta, conclusion: triple("rabbit is a") },
     ];
 
     expect(stratify(rules, [])).toEqual(new Map([["1", 1], ["2", 1]]));
   });
 
   it("treats a variable object as every object of that relation", () => {
-    const rules = [{ id: "1", conditions: [{ ...triple("?x is a"), negated: false }, { ...triple("?x is ?y"), negated: true }], conclusion: triple("?x is b") }];
+    const rules = [{ id: "1", conditions: [{ ...triple("?x is a"), negated: false }, { ...triple("?x is ?y"), negated: true }], ...meta, conclusion: triple("?x is b") }];
 
     expect(stratify(rules, [])).toBeNull();
   });

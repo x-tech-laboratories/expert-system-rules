@@ -8,7 +8,7 @@ import { join, resolve } from "node:path";
 import { explain, infer, query } from "./engine.ts";
 import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
-import { is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
+import { catalog_problems, find_catalog, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
 import { ask_model, check_cases, is_correct, score, type CaseResult, type ProgramRunner } from "./runner.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
@@ -73,9 +73,14 @@ async function check(context: CliContext, paths: string[]): Promise<number> {
   let failures = 0;
   for (const path of paths) {
     const rule_set = await load_rule_set(path);
+    const catalog = await find_catalog(path);
     const results = check_cases(rule_set);
     const passed = results.filter(is_correct).length;
     line(context.out, `${rule_set.id}: ${rule_set.rules.length} rules, ${rule_set.facts.length} facts, ${passed}/${results.length} cases match the engine`);
+    for (const problem of catalog ? catalog_problems(catalog, path, rule_set) : []) {
+      failures++;
+      line(context.out, `  ${problem}`);
+    }
     for (const result of results.filter(result => !is_correct(result))) {
       failures++;
       report_wrong(context, result, "the case says");

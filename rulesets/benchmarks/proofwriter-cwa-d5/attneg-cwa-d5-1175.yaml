@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-1175
 title: ProofWriter AttNeg-CWA-D5-1175
 description: "Bob is quiet. Erin is blue. Erin is cold. Erin is green. Fiona is blue. Fiona is quiet. Harry is big. Harry is blue. Harry is cold. Harry is nice. If something is quiet and cold then it is blue. If Bob is cold then Bob is big. If something is blue and quiet then it is big. If something is nice then it is big. If something is big and nice then it is green. All red, big things are cold. Green things are red. Quiet, big things are nice."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

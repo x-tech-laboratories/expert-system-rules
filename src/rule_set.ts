@@ -1,9 +1,10 @@
 // Reads a rule set from YAML and checks it: facts are subject-relation-object triples, rules join triples through ?variables, and nothing may depend on its own negation.
+// A rule set may share a vocabulary of relations and import other rule sets' facts and rules; the loader finds both from the catalog at the repository root.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { access, readdir, readFile } from "node:fs/promises";
+import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { parse } from "yaml";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
@@ -18,10 +19,25 @@ export interface Condition extends Triple {
   negated: boolean;
 }
 
+// How a rule came to be: written by a person, drafted by a model (and maybe reviewed), or converted mechanically from another collection.
+export const methods = ["hand_written", "llm_drafted", "llm_drafted_human_reviewed", "converted"] as const;
+
 export interface Rule {
   id: string;
   conditions: Condition[];
   conclusion: Triple;
+  source: string;
+  method: string;
+  note: string;
+  // The rule set it was imported from, or "" for the rule set's own rules.
+  from: string;
+}
+
+export interface Relation {
+  meaning: string;
+  wikidata: string;
+  // The vocabulary or imported rule set it comes from, or "" when the rule set declares it.
+  from: string;
 }
 
 export interface Case {
@@ -36,15 +52,34 @@ export interface RuleSet {
   id: string;
   title: string;
   description: string;
+  version: string;
   license: string;
   source: string;
+  method: string;
   tags: string[];
   origin: string;
-  relations: Map<string, string>;
+  vocabularies: string[];
+  imports: string[];
+  relations: Map<string, Relation>;
   facts: Triple[];
   rules: Rule[];
   cases: Case[];
   rule_strata: Map<string, number>;
+}
+
+export interface Vocabulary {
+  id: string;
+  title: string;
+  version: string;
+  license: string;
+  source: string;
+  relations: Map<string, Relation>;
+}
+
+// What a rule set can name: vocabularies by id, and other rule sets by their path under rulesets/ without ".yaml".
+export interface Library {
+  vocabulary(name: string): Vocabulary | undefined;
+  rule_set(name: string): RuleSet | undefined;
 }
 
 export class RuleSetError extends Error {
@@ -57,10 +92,15 @@ export class RuleSetError extends Error {
   }
 }
 
+const empty_library: Library = { vocabulary: () => undefined, rule_set: () => undefined };
+
 // ── Terms and triples ────────────────────────────────────────────────────────
 
 const constant_pattern = /^[a-z0-9][a-z0-9_]*$/;
 const variable_pattern = /^\?[a-z][a-z0-9_]*$/;
+const version_pattern = /^\d+\.\d+\.\d+$/;
+const wikidata_pattern = /^P[1-9]\d*$/;
+const module_pattern = /^[a-z0-9][a-z0-9_-]*(\/[a-z0-9][a-z0-9_-]*)*$/;
 
 export function is_variable(term: string): boolean {
   return term.startsWith("?");
@@ -128,11 +168,11 @@ function is_mapping(value: unknown): value is Mapping {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function read_text(mapping: Mapping, key: string, problems: string[], required = true): string {
+function read_text(mapping: Mapping, key: string, problems: string[], required = true, where = ""): string {
   const value = mapping[key];
   if (typeof value === "string" && value.trim()) return value.trim();
   if (value === undefined && !required) return "";
-  problems.push(`"${key}" must be a non-empty string`);
+  problems.push(`${where}"${key}" must be a non-empty string`);
   return "";
 }
 
@@ -143,6 +183,55 @@ function read_names(value: unknown, where: string, problems: string[]): string[]
     return [];
   }
   return value.map(item => String(item).trim());
+}
+
+function read_version(mapping: Mapping, problems: string[]): string {
+  // YAML reads an unquoted 2.1 as a number; show it as written.
+  const version = typeof mapping.version === "number" ? String(mapping.version) : read_text(mapping, "version", problems);
+  if (version && !version_pattern.test(version)) problems.push(`"version" must be major.minor.patch, such as 1.0.0, not "${version}"`);
+  return version;
+}
+
+function read_method(mapping: Mapping, where: string, fallback: string, problems: string[]): string {
+  const method = read_text(mapping, "method", problems, false, where);
+  if (method && !(methods as readonly string[]).includes(method)) problems.push(`${where}"method" must be one of ${methods.join(", ")}, not "${method}"`);
+  return method || fallback;
+}
+
+function unknown_keys(mapping: Mapping, allowed: string[], where: string, problems: string[]): void {
+  for (const key of Object.keys(mapping)) if (!allowed.includes(key)) problems.push(`${where} has an unknown field "${key}"; the fields are ${allowed.join(", ")}`);
+}
+
+// Reads relations written as "name: meaning" or "name: { meaning, wikidata }".
+function read_relations(value: unknown, problems: string[]): Map<string, Relation> {
+  const relations = new Map<string, Relation>();
+  if (value === undefined) return relations;
+  if (!is_mapping(value)) {
+    problems.push(`"relations" must map each relation name to what it means`);
+    return relations;
+  }
+  for (const [name, entry] of Object.entries(value)) {
+    if (!constant_pattern.test(name)) problems.push(`relation "${name}" must be lower_snake_case`);
+    const details = is_mapping(entry) ? entry : { meaning: entry };
+    if (is_mapping(entry)) unknown_keys(entry, ["meaning", "wikidata"], `relation "${name}"`, problems);
+    const meaning = typeof details.meaning === "string" ? details.meaning.trim() : "";
+    if (!meaning) problems.push(`relation "${name}" needs a meaning`);
+    const wikidata = details.wikidata === undefined ? "" : String(details.wikidata).trim();
+    if (details.wikidata !== undefined && !wikidata_pattern.test(wikidata)) problems.push(`relation "${name}": "wikidata" must be a property id such as P31, not "${wikidata}"`);
+    relations.set(name, { meaning, wikidata, from: "" });
+  }
+  return relations;
+}
+
+function read_yaml(text: string, origin: string): Mapping {
+  let document: unknown;
+  try {
+    document = parse(text);
+  } catch (error) {
+    throw new RuleSetError(origin, [`not valid YAML: ${(error as Error).message.split("\n")[0]}`]);
+  }
+  if (!is_mapping(document)) throw new RuleSetError(origin, ["the file must hold a mapping"]);
+  return document;
 }
 
 // ── Layers ───────────────────────────────────────────────────────────────────
@@ -193,33 +282,60 @@ export function stratify(rules: Rule[], given: Triple[]): Map<string, number> | 
   return rule_strata;
 }
 
+// ── Vocabularies ─────────────────────────────────────────────────────────────
+
+export function parse_vocabulary(text: string, origin: string): Vocabulary {
+  const document = read_yaml(text, origin);
+  const problems: string[] = [];
+  unknown_keys(document, ["id", "title", "version", "license", "source", "relations"], "the vocabulary", problems);
+  const id = read_text(document, "id", problems);
+  const title = read_text(document, "title", problems);
+  const version = read_version(document, problems);
+  const license = read_text(document, "license", problems);
+  const source = read_text(document, "source", problems);
+  const relations = read_relations(document.relations, problems);
+  if (!relations.size) problems.push(`"relations" must list at least one relation`);
+  if (problems.length) throw new RuleSetError(origin, problems);
+  for (const relation of relations.values()) relation.from = id;
+  return { id, title, version, license, source, relations };
+}
+
+// Adds relations from a vocabulary or an import, refusing a name that already means something else.
+function merge_relations(into: Map<string, Relation>, from: Map<string, Relation>, label: string, problems: string[]): void {
+  for (const [name, relation] of from) {
+    const existing = into.get(name);
+    if (!existing) into.set(name, { ...relation, from: relation.from || label });
+    else if (existing.from === "") problems.push(`the relation "${name}" is already defined by ${label}; remove it from "relations"`);
+    else if (existing.meaning !== relation.meaning) problems.push(`the relation "${name}" means different things in ${existing.from} and ${label}`);
+  }
+}
+
 // ── Parsing ──────────────────────────────────────────────────────────────────
 
-export function parse_rule_set(text: string, origin: string): RuleSet {
-  let document: unknown;
-  try {
-    document = parse(text);
-  } catch (error) {
-    throw new RuleSetError(origin, [`not valid YAML: ${(error as Error).message.split("\n")[0]}`]);
-  }
-  if (!is_mapping(document)) throw new RuleSetError(origin, ["the file must hold a mapping"]);
+const rule_set_fields = ["id", "title", "description", "version", "license", "source", "method", "tags", "vocabularies", "imports", "relations", "facts", "rules", "cases"];
+const rule_fields = ["id", "if", "then", "source", "method", "note"];
+const case_fields = ["id", "note", "facts", "expect", "expect_not"];
 
+export function parse_rule_set(text: string, origin: string, library: Library = empty_library): RuleSet {
+  const document = read_yaml(text, origin);
   const problems: string[] = [];
+  unknown_keys(document, rule_set_fields, "the rule set", problems);
   const id = read_text(document, "id", problems);
   const title = read_text(document, "title", problems);
   const description = read_text(document, "description", problems, false);
+  const version = read_version(document, problems);
   const license = read_text(document, "license", problems);
   const source = read_text(document, "source", problems);
+  const method = read_method(document, "", "hand_written", problems);
   const tags = read_names(document.tags, `"tags"`, problems);
+  const vocabularies = read_names(document.vocabularies, `"vocabularies"`, problems);
+  const imports = read_names(document.imports, `"imports"`, problems);
 
-  const relations = new Map<string, string>();
-  if (!is_mapping(document.relations)) problems.push(`"relations" must map each relation name to what it means`);
-  else {
-    for (const [name, meaning] of Object.entries(document.relations)) {
-      if (!constant_pattern.test(name)) problems.push(`relation "${name}" must be lower_snake_case`);
-      if (typeof meaning !== "string" || !meaning.trim()) problems.push(`relation "${name}" needs a meaning`);
-      relations.set(name, String(meaning ?? "").trim());
-    }
+  const relations = read_relations(document.relations, problems);
+  for (const name of vocabularies) {
+    const vocabulary = library.vocabulary(name);
+    if (!vocabulary) problems.push(`no vocabulary named "${name}"`);
+    else merge_relations(relations, vocabulary.relations, `vocabulary ${name}`, problems);
   }
 
   const ground = { variables: false, negation: false };
@@ -234,13 +350,18 @@ export function parse_rule_set(text: string, origin: string): RuleSet {
       const rule_id = typeof entry.id === "string" ? entry.id.trim() : "";
       const name = rule_id || String(index + 1);
       if (!rule_id) problems.push(`rule ${index + 1} needs an id`);
+      else if (rule_id.includes(":")) problems.push(`rule id "${rule_id}" must not hold ":", which marks imported rules`);
       else if (seen.has(rule_id)) problems.push(`rule id "${rule_id}" is used twice`);
       seen.add(rule_id);
+      unknown_keys(entry, rule_fields, `rule ${name}`, problems);
 
       const conditions = read_triples(entry.if, `rule ${name} condition`, { variables: true, negation: true }, problems);
       const has_conditions = Array.isArray(entry.if) && entry.if.length > 0;
       if (!has_conditions) problems.push(`rule ${name} needs a list of conditions under "if"`);
       const conclusion = read_triple(entry.then, `rule ${name} "then"`, { variables: true, negation: false }, problems);
+      const rule_source = read_text(entry, "source", problems, false, `rule ${name}: `);
+      const rule_method = read_method(entry, `rule ${name}: `, method, problems);
+      const note = read_text(entry, "note", problems, false, `rule ${name}: `);
       if (!conclusion || !has_conditions) return;
 
       const bound = new Set(conditions.filter(condition => !condition.negated).flatMap(condition => [condition.subject, condition.object]).filter(is_variable));
@@ -248,9 +369,27 @@ export function parse_rule_set(text: string, origin: string): RuleSet {
         .flatMap(triple => [triple.subject, triple.object])
         .filter(term => is_variable(term) && !bound.has(term));
       for (const variable of new Set(unbound)) problems.push(`rule ${name}: ${variable} must appear in a condition without "not"`);
-      rules.push({ id: rule_id, conditions, conclusion: plain(conclusion) });
+      rules.push({ id: rule_id, conditions, conclusion: plain(conclusion), source: rule_source, method: rule_method, note, from: "" });
     });
   }
+
+  // Imported facts and rules join this rule set's own; imported rule ids are qualified by where they came from.
+  const imported_rules = new Map<string, Rule>();
+  for (const name of imports) {
+    if (!module_pattern.test(name)) problems.push(`the import "${name}" must be a path under rulesets/ without ".yaml", such as core/upper`);
+    const other = library.rule_set(name);
+    if (!other) {
+      problems.push(`no rule set named "${name}" to import`);
+      continue;
+    }
+    merge_relations(relations, other.relations, `import ${name}`, problems);
+    facts.push(...other.facts);
+    for (const rule of other.rules) {
+      const qualified = rule.from ? rule : { ...rule, id: `${name}:${rule.id}`, from: name };
+      imported_rules.set(qualified.id, qualified);
+    }
+  }
+  rules.push(...imported_rules.values());
 
   const cases: Case[] = [];
   if (document.cases !== undefined && !Array.isArray(document.cases)) problems.push(`"cases" must be a list`);
@@ -265,6 +404,7 @@ export function parse_rule_set(text: string, origin: string): RuleSet {
     if (!case_id) problems.push(`case ${index + 1} needs an id`);
     else if (seen_cases.has(case_id)) problems.push(`case id "${case_id}" is used twice`);
     seen_cases.add(case_id);
+    unknown_keys(entry, case_fields, `case ${name}`, problems);
     const case_facts = read_triples(entry.facts, `case ${name} fact`, ground, problems).map(plain);
     const expect = read_triples(entry.expect, `case ${name} expect`, ground, problems).map(plain);
     const expect_not = read_triples(entry.expect_not, `case ${name} expect_not`, ground, problems).map(plain);
@@ -275,20 +415,150 @@ export function parse_rule_set(text: string, origin: string): RuleSet {
 
   const used = [...facts, ...rules.flatMap(rule => [rule.conclusion, ...rule.conditions]), ...cases.flatMap(entry => [...entry.facts, ...entry.expect, ...entry.expect_not])];
   for (const relation of new Set(used.map(triple => triple.relation))) {
-    if (relations.size && !relations.has(relation)) problems.push(`the relation "${relation}" is used but not listed under "relations"`);
+    if (!relations.has(relation)) problems.push(`the relation "${relation}" is used but not listed under "relations" or in a vocabulary`);
   }
 
   const rule_strata = stratify(rules, [...facts, ...cases.flatMap(entry => entry.facts)]);
   if (!rule_strata) problems.push("a conclusion depends on its own negation, so the rules have no single answer");
 
   if (problems.length) throw new RuleSetError(origin, problems);
-  return { id, title, description, license, source, tags, origin, relations, facts, rules, cases, rule_strata: rule_strata! };
+  return { id, title, description, version, license, source, method, tags, origin, vocabularies, imports, relations, facts, rules, cases, rule_strata: rule_strata! };
+}
+
+// ── Catalog ──────────────────────────────────────────────────────────────────
+
+// The repository's map of rule sets: the subject folders under rulesets/ and the tags rule sets may carry.
+export interface Subject {
+  description: string;
+  // The Wikidata item the subject covers, such as Q729 for animals, or "".
+  wikidata: string;
+}
+
+export interface Catalog {
+  root: string;
+  subjects: Map<string, Subject>;
+  tags: Map<string, string>;
+}
+
+const catalog_file = "catalog.yaml";
+
+export function parse_catalog(text: string, root: string): Catalog {
+  const origin = join(root, catalog_file);
+  const document = read_yaml(text, origin);
+  const problems: string[] = [];
+  unknown_keys(document, ["subjects", "tags"], "the catalog", problems);
+  const read_map = (key: string): Map<string, Mapping> => {
+    const value = document[key];
+    if (!is_mapping(value) || !Object.keys(value).length) {
+      problems.push(`"${key}" must map each name to what it covers`);
+      return new Map();
+    }
+    return new Map(Object.entries(value).map(([name, entry]) => [name, is_mapping(entry) ? entry : { description: entry }]));
+  };
+  const subjects = new Map<string, Subject>();
+  for (const [name, entry] of read_map("subjects")) {
+    unknown_keys(entry, ["description", "wikidata"], `subject "${name}"`, problems);
+    const description = read_text(entry, "description", problems, true, `subject "${name}": `);
+    const wikidata = entry.wikidata === undefined ? "" : String(entry.wikidata).trim();
+    if (entry.wikidata !== undefined && !/^Q[1-9]\d*$/.test(wikidata)) problems.push(`subject "${name}": "wikidata" must be an item id such as Q729, not "${wikidata}"`);
+    subjects.set(name, { description, wikidata });
+  }
+  const tags = new Map<string, string>();
+  for (const [name, entry] of read_map("tags")) {
+    unknown_keys(entry, ["description"], `tag "${name}"`, problems);
+    tags.set(name, read_text(entry, "description", problems, true, `tag "${name}": `));
+  }
+  if (problems.length) throw new RuleSetError(origin, problems);
+  return { root, subjects, tags };
+}
+
+// A rule set's name for imports: its path under rulesets/ without ".yaml", such as commonsense/kitchen.
+export function module_name(catalog: Catalog, path: string): string {
+  const inside = relative(join(catalog.root, "rulesets"), path);
+  return inside.slice(0, inside.length - extname(inside).length).split(sep).join("/");
+}
+
+// Where a rule set file breaks the catalog: an unlisted subject folder or tag, or an id that is not the file name.
+export function catalog_problems(catalog: Catalog, path: string, rule_set: RuleSet): string[] {
+  const problems: string[] = [];
+  const name = module_name(catalog, path);
+  const subject = name.split("/")[0];
+  if (name.startsWith("..") || !name.includes("/")) problems.push(`rule sets live in a subject folder under rulesets/, not at ${path}`);
+  else if (!catalog.subjects.has(subject)) problems.push(`the subject folder "${subject}" is not listed under "subjects" in ${catalog_file}`);
+  const stem = basename(path, extname(path));
+  if (rule_set.id !== stem) problems.push(`the id "${rule_set.id}" must match the file name "${stem}"`);
+  for (const tag of rule_set.tags) if (!catalog.tags.has(tag)) problems.push(`the tag "${tag}" is not listed under "tags" in ${catalog_file}`);
+  return problems;
 }
 
 // ── Loading ──────────────────────────────────────────────────────────────────
 
+async function exists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Finds the catalog in the file's folder or the nearest folder above it.
+export async function find_catalog(path: string): Promise<Catalog | null> {
+  let folder = dirname(path);
+  for (;;) {
+    const candidate = join(folder, catalog_file);
+    if (await exists(candidate)) return parse_catalog(await readFile(candidate, "utf8"), folder);
+    const parent = dirname(folder);
+    if (parent === folder) return null;
+    folder = parent;
+  }
+}
+
+// Loads vocabularies and imports from the files the catalog's root holds, each once, refusing imports that loop.
+class FileLibrary implements Library {
+  private vocabularies = new Map<string, Vocabulary>();
+  private rule_sets = new Map<string, RuleSet>();
+  private root: string | null;
+
+  constructor(root: string | null) {
+    this.root = root;
+  }
+
+  vocabulary(name: string): Vocabulary | undefined {
+    return this.vocabularies.get(name);
+  }
+
+  rule_set(name: string): RuleSet | undefined {
+    return this.rule_sets.get(name);
+  }
+
+  async load(path: string, loading: string[] = []): Promise<RuleSet> {
+    const text = await readFile(path, "utf8");
+    if (this.root) {
+      let wanted: Mapping = {};
+      try {
+        wanted = read_yaml(text, path);
+      } catch {
+        // parse_rule_set reports the broken file below.
+      }
+      for (const name of read_names(wanted.vocabularies, "", [])) {
+        const file = join(this.root, "vocabularies", `${name}.yaml`);
+        if (!this.vocabularies.has(name) && (await exists(file))) this.vocabularies.set(name, parse_vocabulary(await readFile(file, "utf8"), file));
+      }
+      for (const name of read_names(wanted.imports, "", [])) {
+        if (!module_pattern.test(name) || this.rule_sets.has(name)) continue;
+        const file = join(this.root, "rulesets", `${name}.yaml`);
+        if (loading.includes(file)) throw new RuleSetError(path, [`the imports loop: ${[...loading, file].map(item => relative(this.root!, item)).join(" -> ")}`]);
+        if (await exists(file)) this.rule_sets.set(name, await this.load(file, [...loading, file]));
+      }
+    }
+    return parse_rule_set(text, path, this);
+  }
+}
+
 export async function load_rule_set(path: string): Promise<RuleSet> {
-  return parse_rule_set(await readFile(path, "utf8"), path);
+  const catalog = await find_catalog(path);
+  return new FileLibrary(catalog?.root ?? null).load(path, [path]);
 }
 
 // Lists every .yaml file under a folder and its subject subfolders, in path order.

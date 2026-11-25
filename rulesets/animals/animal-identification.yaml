@@ -5,6 +5,7 @@ description: >
   It shows forward chaining through intermediate classes (mammal, bird, carnivore, ungulate).
   The rules are deliberately incomplete, so some real animals come out wrong; a model has to
   follow the rules, not zoology.
+version: 1.0.0
 license: CC-BY-SA-4.0
 tags: [classification, negation, trap-cases, adapted]
 source: >

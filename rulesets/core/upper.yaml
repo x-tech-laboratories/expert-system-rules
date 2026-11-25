@@ -1,0 +1,45 @@
+id: upper
+title: Upper kinds
+description: >
+  A shallow tree of the broadest kinds of thing, kept to a few levels on purpose: physical objects,
+  living things, artifacts, substances, places, agents, events and abstract things. A kind may sit
+  under more than one parent (a person is both an animal and an agent). Rule sets import it to place
+  their own kinds in the tree, and inherit kinds through subclass_of.
+version: 1.0.0
+license: CC-BY-SA-4.0
+source: Original to this repository, after the top levels shared by upper ontologies such as BFO and SUMO.
+tags: [backbone, taxonomy, transitivity, original]
+vocabularies: [core]
+
+rules:
+  - { id: U1, if: [?x is_a ?kind, ?kind subclass_of ?wider], then: ?x is_a ?wider, note: An instance of a kind is an instance of every wider kind. }
+  - { id: U2, if: [?a subclass_of ?b, ?b subclass_of ?c], then: ?a subclass_of ?c, note: A kind of a kind is a kind. }
+
+facts:
+  - physical_object subclass_of thing
+  - place subclass_of thing
+  - agent subclass_of thing
+  - event subclass_of thing
+  - abstract_thing subclass_of thing
+  - living_thing subclass_of physical_object
+  - artifact subclass_of physical_object
+  - substance subclass_of physical_object
+  - animal subclass_of living_thing
+  - plant subclass_of living_thing
+  - person subclass_of animal
+  - person subclass_of agent
+  - organization subclass_of agent
+  - action subclass_of event
+  - quantity subclass_of abstract_thing
+  - information subclass_of abstract_thing
+
+cases:
+  - id: a_dog
+    facts: [rex is_a dog, dog subclass_of animal]
+    expect: [rex is_a living_thing, rex is_a physical_object, rex is_a thing, dog subclass_of thing]
+    expect_not: [rex is_a agent, rex is_a abstract_thing]
+  - id: a_person
+    note: Two parents. A person is an agent and a living thing, but not an organization.
+    facts: [ada is_a person]
+    expect: [ada is_a agent, ada is_a living_thing, ada is_a thing]
+    expect_not: [ada is_a organization, ada is_a artifact]

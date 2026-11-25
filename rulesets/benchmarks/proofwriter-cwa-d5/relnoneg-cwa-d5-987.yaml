@@ -1,7 +1,9 @@
 id: relnoneg-cwa-d5-987
 title: ProofWriter RelNoneg-CWA-D5-987
 description: "The bald eagle chases the cat. The bald eagle visits the rabbit. The cat is green. The cat is kind. The cat likes the rabbit. The mouse chases the cat. The mouse likes the bald eagle. The mouse likes the cat. The mouse visits the rabbit. The rabbit likes the cat. If someone likes the cat then the cat visits the mouse. If someone visits the mouse and they like the cat then the mouse visits the bald eagle. If someone likes the bald eagle and the bald eagle visits the mouse then the bald eagle chases the mouse. If the bald eagle likes the cat then the bald eagle is cold. If someone visits the bald eagle and they chase the bald eagle then the bald eagle chases the cat. If someone chases the cat then they like the cat. If someone is blue and kind then they like the rabbit. If someone likes the cat and they chase the mouse then they like the bald eagle. If someone is cold then they visit the mouse."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

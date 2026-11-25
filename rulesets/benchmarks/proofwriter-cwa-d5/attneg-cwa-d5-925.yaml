@@ -1,7 +1,9 @@
 id: attneg-cwa-d5-925
 title: ProofWriter AttNeg-CWA-D5-925
 description: "Bob is cold. Bob is round. Bob is smart. Bob is white. Dave is cold. Dave is round. Erin is cold. Erin is round. Erin is smart. Erin is young. Gary is cold. Gary is furry. Gary is smart. Gary is young. If something is round and smart then it is young. Furry things are white. Young things are rough. If something is white then it is furry. If something is white and rough then it is furry. All young things are furry. If something is round then it is furry. If something is smart and rough then it is cold. If something is white then it is smart."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,

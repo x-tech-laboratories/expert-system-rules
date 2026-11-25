@@ -11,33 +11,41 @@ part; the work is in verifying, scoping and governing them.
   names, unbound variables and conclusions that depend on their own negation.
 - Every rule set carries test cases, and CI fails when a case disagrees with the engine.
 - A runner that scores any command-line model against the engine.
+- Rule sets are versioned modules named by their path, listed in a catalog of subjects and tags,
+  sharing a core vocabulary mapped to Wikidata properties, importing each other (the shallow
+  `core/upper` tree of kinds first), and recording each rule's source and how it was written.
 
 ## Next
 
-1. **Provenance per rule.** An optional `source` on each rule (a citation or the quoted passage it
-   came from) and a `method` such as `hand_written`, `llm_drafted` or `llm_drafted_human_reviewed`.
+1. **Provenance per fact.** Rules carry `source` and `method`; facts brought in from elsewhere need
+   the same, down to the Wikidata item, statement id and snapshot date each one came from, so every
+   conclusion can cite the statements behind it.
 2. **An LLM drafting command.** `draft --source document.txt` asks a model for candidate rules, each
    with its citation and test cases, written as a new rule set for review in a pull request.
 3. **Stronger checks in CI.** Rules that can never fire, conclusions nothing uses, two rule sets
    with the same id, and test cases that cover every rule at least once.
-4. **Scopes.** Rule sets stay closed worlds, one per file, so a rule true in one scope cannot clash
-   with another. Folders by subject and `tags` group them; a rule set can later import another's
-   conclusions by id when sharing is needed.
+4. **Scopes.** Done as modules and imports (see [format.md](format.md#organising)). Still to come:
+   importing only a rule set's conclusions rather than all its rules.
 5. **Defaults and exceptions.** Many real rules hold "unless" something; today that is written with
    `not`. A `certainty` or `default` marker may follow if real rule sets need it.
 6. **More collections.** ProofWriter is converted; ATOMIC, ConceptNet and OpenCyc follow, as planned in
    [porting.md](porting.md).
-7. **Facts from Wikidata.** Triples already match Wikidata's statements; an importer can bring in
-   reference facts for rule sets to reason over, and qualifiers can carry relationships with more
-   than two parts.
+7. **Facts from Wikidata.** Triples already match Wikidata's statements and the core vocabulary names
+   the matching properties. Wikidata holds facts, not rules or confidence: an importer should pull a
+   narrow slice (through SPARQL or a dump) into a pinned local snapshot, since the public endpoint
+   times out and its data changes, and keep the rules here. Coverage is uneven, so a missing
+   statement must read as unknown, not false (item 10), and `not` should only read facts curated
+   here. Qualifiers can carry relationships with more than two parts.
 8. **Numbers.** The common-sense rule sets compare and order things without arithmetic. Built-in
    relations such as `less_than` and `plus` would let rules work with real quantities, dates and
-   unit conversions.
+   unit conversions. Wikidata's quantities come with a unit (an item) and upper and lower bounds, so
+   numbers need unit normalisation and ranges as well.
 9. **Per-individual layering.** The check that refuses rules looping through `not` works on kinds of
    triples, so it refuses some rule sets that only loop for different individuals (71 of about 15,000
    ProofWriter theories). Checking each individual (local stratification) would accept them.
 10. **An "unknown" answer.** General knowledge is an open world: what is not concluded is often not
-   false but unknown. A three-valued mode would answer true, false or unknown.
+   false but unknown. A three-valued mode would answer true, false or unknown, with relations marked
+   open-world (such as facts from Wikidata) never read by `not`.
 
 ## Out of scope for now
 

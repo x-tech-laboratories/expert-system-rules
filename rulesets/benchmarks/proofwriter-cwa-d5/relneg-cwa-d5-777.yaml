@@ -1,7 +1,9 @@
 id: relneg-cwa-d5-777
 title: ProofWriter RelNeg-CWA-D5-777
 description: "The cat likes the lion. The cat likes the squirrel. The cat visits the squirrel. The dog is big. The dog visits the lion. The lion is young. The lion visits the cat. The lion visits the squirrel. The squirrel eats the dog. The squirrel eats the lion. The squirrel visits the dog. If someone eats the lion and they do not visit the squirrel then the squirrel is red. If the dog eats the lion and the dog visits the squirrel then the lion likes the cat. All green people are big. If someone is big then they visit the lion. If someone eats the squirrel then the squirrel eats the dog. If someone likes the squirrel then they are green. If the cat visits the lion and the lion visits the squirrel then the lion is green. If someone visits the dog then they visit the cat."
+version: 1.0.0
 license: CC-BY-4.0
+method: converted
 tags: [benchmark, proofwriter, closed-world, adapted]
 source: >
   Converted mechanically from ProofWriter (Tafjord, Dalvi and Clark, 2021), closed-world version,
