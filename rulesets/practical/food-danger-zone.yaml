@@ -1,0 +1,130 @@
+id: food-danger-zone
+title: Food danger zone
+description: >-
+  When food is in the temperature danger zone, which foods are at risk, how
+  long food may stay in the zone, and who is more at risk from food-borne
+  illness.
+version: 1.0.0
+license: CC-BY-SA-4.0
+source: "Drafted by a language model from the Wikipedia article \"Danger zone (food safety)\", revision 1386094887 (https://en.wikipedia.org/w/index.php?oldid=1386094887), by Wikipedia contributors, CC BY-SA 4.0."
+method: llm_drafted
+tags: [food-safety, quantities, units, trap-cases]
+vocabularies: [core]
+relations:
+  temperature_c: The subject is at this temperature, in degrees Celsius.
+  temperature_zone: The subject's temperature lies in this named zone.
+  hours_in_danger_zone: The subject has stayed in the danger zone for this many hours.
+  storage_status: Whether the subject is stored in a safe or an unsafe way.
+  consumption_advice: Whether the subject should be eaten or not.
+facts: []
+rules:
+  - id: R1
+    if:
+      - "?f temperature_c ?t"
+      - "?t at_least 4"
+      - "?t at_most 63"
+    then: "?f temperature_zone danger_zone"
+    source: "with the high and low temperatures of the range being 4 to 63 °C (39 to 145 °F)"
+  - id: R2
+    if:
+      - "?f is_a potentially_hazardous_food"
+      - "?f temperature_zone danger_zone"
+    then: "?f storage_status unsafe_storage"
+    source: "Potentially hazardous food should not be stored at temperatures in this range in order to prevent foodborne illness."
+  - id: R3
+    if:
+      - "?f hours_in_danger_zone ?h"
+      - "?h greater_than 2"
+    then: "?f consumption_advice do_not_consume"
+    source: "food that remains in the danger zone for more than two hours should not be consumed"
+  - id: R4
+    if:
+      - "?f is_a meat"
+    then: "?f is_a potentially_hazardous_food"
+    source: "Foods at risk include meat, dairy products, and produce."
+  - id: R5
+    if:
+      - "?f is_a dairy_product"
+    then: "?f is_a potentially_hazardous_food"
+    source: "Foods at risk include meat, dairy products, and produce."
+  - id: R6
+    if:
+      - "?f is_a cut_produce"
+    then: "?f is_a potentially_hazardous_food"
+    source: "Cut or peeled fresh produce"
+  - id: R7
+    if:
+      - "?p is_a young_child"
+    then: "?p has_property higher_risk_from_foodborne_illness"
+    source: "Food-borne illness becomes more dangerous in certain populations, such as people with weakened immune systems, young children, the elderly, and pregnant women."
+cases:
+  - id: dairy-in-zone
+    note: Dairy is hazardous food, and 20 degrees is inside the zone, so storing it there is unsafe.
+    facts:
+      - "milk is_a dairy_product"
+      - "milk temperature_c 20"
+    expect:
+      - "milk is_a potentially_hazardous_food"
+      - "milk temperature_zone danger_zone"
+      - "milk storage_status unsafe_storage"
+  - id: zone-edges
+    note: 4 and 63 are inside the range; 3 and 64 are outside it.
+    facts:
+      - "soup_a is_a potentially_hazardous_food"
+      - "soup_a temperature_c 4"
+      - "soup_b is_a potentially_hazardous_food"
+      - "soup_b temperature_c 63"
+      - "soup_c is_a potentially_hazardous_food"
+      - "soup_c temperature_c 3"
+      - "soup_d is_a potentially_hazardous_food"
+      - "soup_d temperature_c 64"
+    expect:
+      - "soup_a temperature_zone danger_zone"
+      - "soup_a storage_status unsafe_storage"
+      - "soup_b temperature_zone danger_zone"
+      - "soup_b storage_status unsafe_storage"
+    expect_not:
+      - "soup_c temperature_zone danger_zone"
+      - "soup_c storage_status unsafe_storage"
+      - "soup_d temperature_zone danger_zone"
+      - "soup_d storage_status unsafe_storage"
+  - id: time-threshold
+    note: Exactly two hours is not more than two hours; three hours is.
+    facts:
+      - "chicken_a hours_in_danger_zone 2"
+      - "chicken_b hours_in_danger_zone 3"
+    expect:
+      - "chicken_b consumption_advice do_not_consume"
+    expect_not:
+      - "chicken_a consumption_advice do_not_consume"
+  - id: meat-hot-held
+    note: Meat is hazardous food, but at 70 degrees it is outside the zone, so storage is not flagged.
+    facts:
+      - "beef is_a meat"
+      - "beef temperature_c 70"
+    expect:
+      - "beef is_a potentially_hazardous_food"
+    expect_not:
+      - "beef temperature_zone danger_zone"
+      - "beef storage_status unsafe_storage"
+  - id: untyped-food-in-zone
+    note: A food not stated to be hazardous in the zone is not flagged as unsafe storage.
+    facts:
+      - "bread temperature_c 20"
+    expect:
+      - "bread temperature_zone danger_zone"
+    expect_not:
+      - "bread storage_status unsafe_storage"
+  - id: cut-produce-and-child
+    note: Cut produce is hazardous food; a young child is a higher-risk person.
+    facts:
+      - "melon_slices is_a cut_produce"
+      - "melon_slices temperature_c 10"
+      - "sam is_a young_child"
+      - "pat is_a adult"
+    expect:
+      - "melon_slices is_a potentially_hazardous_food"
+      - "melon_slices storage_status unsafe_storage"
+      - "sam has_property higher_risk_from_foodborne_illness"
+    expect_not:
+      - "pat has_property higher_risk_from_foodborne_illness"
