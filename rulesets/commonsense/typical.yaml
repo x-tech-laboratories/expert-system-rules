@@ -1,0 +1,63 @@
+id: typical
+title: Typical and exceptional
+description: >
+  Defaults and their exceptions: birds usually fly, but penguins, ostriches and birds with an
+  injured wing do not, and bats fly though they are not birds. What can do what is an open world,
+  so where nothing settles it (a dog, a plane) the answer is unknown rather than no, which is
+  where a reader using real-world knowledge goes wrong.
+version: 1.0.0
+license: CC-BY-SA-4.0
+source: Original to this repository, after the classic "Tweety" examples of default reasoning.
+tags: [commonsense, defaults, open-world, trap-cases, original]
+vocabularies: [core]
+imports: [core/upper]
+
+relations:
+  can: { meaning: The subject is able to do this., world: open }
+
+rules:
+  - { id: T1, if: [?x is_a bird], then: ?x can fly, usually: true }
+  - { id: T2, if: [?x is_a penguin], then: not ?x can fly }
+  - { id: T3, if: [?x is_a ostrich], then: not ?x can fly }
+  - { id: T4, if: [?x is_a bird, ?x has_property injured_wing], then: not ?x can fly }
+  - { id: T5, if: [?x is_a bat], then: ?x can fly }
+  - { id: T6, if: [?x is_a bird], then: ?x has_part feathers, usually: true }
+  - { id: T7, if: [?x has_property plucked], then: not ?x has_part feathers }
+
+facts:
+  - bird subclass_of animal
+  - sparrow subclass_of bird
+  - penguin subclass_of bird
+  - ostrich subclass_of bird
+  - mammal subclass_of animal
+  - bat subclass_of mammal
+  - dog subclass_of mammal
+  - airplane subclass_of artifact
+
+cases:
+  - id: sparrow
+    facts: [tweety is_a sparrow]
+    expect: [tweety can fly, tweety has_part feathers, tweety is_a animal]
+  - id: penguin
+    note: The default gives way to the exception; the penguin is still a bird with feathers.
+    facts: [pingu is_a penguin]
+    expect: [pingu is_a bird, pingu has_part feathers]
+    expect_not: [pingu can fly]
+  - id: injured_sparrow
+    facts: [robin is_a sparrow, robin has_property injured_wing]
+    expect_not: [robin can fly]
+  - id: bat
+    note: Not a bird, yet it flies by its own rule.
+    facts: [bruce is_a bat]
+    expect: [bruce can fly, bruce is_a mammal]
+    expect_not: [bruce is_a bird, bruce has_part feathers]
+  - id: dog_and_plane
+    note: Trap. Nothing here says whether a dog or a plane can fly, and "can" is open-world, so both are unknown, not false and not true.
+    facts: [rex is_a dog, jet is_a airplane]
+    expect_unknown: [rex can fly, jet can fly]
+    expect_not: [rex has_part feathers]
+  - id: plucked_penguin
+    note: Both defaults overridden at once.
+    facts: [pingu is_a penguin, pingu has_property plucked]
+    expect_not: [pingu can fly, pingu has_part feathers]
+    expect: [pingu is_a bird]

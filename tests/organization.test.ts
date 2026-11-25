@@ -92,7 +92,7 @@ describe("parse_vocabulary", () => {
   it("reads relations with their Wikidata properties", () => {
     const shared = parse_vocabulary(vocabulary, "shared.yaml");
 
-    expect(shared.relations.get("is_a")).toEqual({ meaning: "Is an instance of.", wikidata: "P31", from: "shared" });
+    expect(shared.relations.get("is_a")).toEqual({ meaning: "Is an instance of.", wikidata: "P31", world: "", from: "shared" });
     expect(shared.version).toBe("1.0.0");
   });
 
@@ -100,7 +100,7 @@ describe("parse_vocabulary", () => {
     expect(problems_of(() => parse_vocabulary("id: v\ntitle: V\nversion: one\nlicense: X\nsource: Y\nextra: 1\nrelations:\n  is_a: { meaning: M, wikidata: Q5, label: L }", "v.yaml"))).toEqual([
       `the vocabulary has an unknown field "extra"; the fields are id, title, version, license, source, relations`,
       `"version" must be major.minor.patch, such as 1.0.0, not "one"`,
-      `relation "is_a" has an unknown field "label"; the fields are meaning, wikidata`,
+      `relation "is_a" has an unknown field "label"; the fields are meaning, wikidata, world`,
       `relation "is_a": "wikidata" must be a property id such as P31, not "Q5"`,
     ]);
     expect(problems_of(() => parse_vocabulary("id: v\ntitle: V\nversion: 1.0.0\nlicense: X\nsource: Y", "v.yaml"))).toEqual([`"relations" must list at least one relation`]);
@@ -169,13 +169,13 @@ describe("parse_rule_set with a library", () => {
       .replace("{ id: rex,", "{ id: rex, answer: 1,");
 
     expect(problems_of(() => parse_rule_set(text, "x.yaml", library_with({ "core/base": parse_rule_set(base, "base.yaml", library_with()) })))).toEqual([
-      `the rule set has an unknown field "colour"; the fields are id, title, description, version, license, source, method, tags, vocabularies, imports, relations, facts, rules, cases`,
+      `the rule set has an unknown field "colour"; the fields are id, title, description, version, license, source, method, world, tags, vocabularies, imports, relations, facts, rules, cases`,
       `"version" must be major.minor.patch, such as 1.0.0, not "2.1"`,
       `"method" must be one of hand_written, llm_drafted, llm_drafted_human_reviewed, converted, not "guessed"`,
       `rule id "P:1" must not hold ":", which marks imported rules`,
-      `rule P:1 has an unknown field "when"; the fields are id, if, then, source, method, note`,
+      `rule P:1 has an unknown field "when"; the fields are id, if, then, usually, source, method, note`,
       `rule P:1: "method" must be one of hand_written, llm_drafted, llm_drafted_human_reviewed, converted, not "magic"`,
-      `case rex has an unknown field "answer"; the fields are id, note, facts, expect, expect_not`,
+      `case rex has an unknown field "answer"; the fields are id, note, facts, expect, expect_not, expect_unknown`,
     ]);
   });
 });

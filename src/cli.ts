@@ -5,7 +5,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-import { explain, infer, query } from "./engine.ts";
+import { explain, infer, query, type Answer } from "./engine.ts";
 import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
 import { catalog_problems, find_catalog, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
@@ -50,7 +50,7 @@ function line(output: Output, text = ""): void {
   output.write(text + "\n");
 }
 
-function show_answer(answer: boolean | null): string {
+function show_answer(answer: Answer | null): string {
   return answer === null ? "no answer" : String(answer);
 }
 
@@ -84,6 +84,7 @@ async function check(context: CliContext, paths: string[]): Promise<number> {
     for (const result of results.filter(result => !is_correct(result))) {
       failures++;
       report_wrong(context, result, "the case says");
+      for (const conflict of result.conflicts) line(context.out, `  ${result.id}: "${triple_text(conflict)}" is concluded both to hold and to be false`);
     }
   }
   return failures ? 1 : 0;
