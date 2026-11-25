@@ -1,0 +1,33 @@
+{
+  "name": "expert-system-rules",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Expert system rule sets in YAML, with an engine and a runner that tests rule-based reasoning against AI models",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "lint": "oxlint",
+    "check": "node src/cli.ts check",
+    "explain": "node src/cli.ts explain",
+    "prompt": "node src/cli.ts prompt",
+    "bench": "node src/cli.ts bench"
+  },
+  "dependencies": {
+    "@x-tech-laboratories/x-libs": "^0.75.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.1.1",
+    "oxlint": "^1.95.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}

@@ -1,0 +1,91 @@
+id: animal-identification
+title: Animal identification
+description: >
+  The textbook zoo-keeper exercise: identify one of seven animals from observable traits.
+  It shows forward chaining through intermediate classes (mammal, bird, carnivore, ungulate).
+  The rules are deliberately incomplete, so some real animals come out wrong; a model has to
+  follow the rules, not zoology.
+license: CC-BY-SA-4.0
+tags: [classification, negation, trap-cases, adapted]
+source: >
+  Written for this repository after the ZOOKEEPER rules in Patrick H. Winston,
+  "Artificial Intelligence" (Addison-Wesley), a widely reproduced teaching example.
+
+features:
+  has_hair: Does it have hair?
+  gives_milk: Does it give milk?
+  has_feathers: Does it have feathers?
+  flies: Does it fly?
+  lays_eggs: Does it lay eggs?
+  eats_meat: Does it eat meat?
+  pointed_teeth: Does it have pointed teeth?
+  claws: Does it have claws?
+  forward_eyes: Do its eyes point forward?
+  hooves: Does it have hooves?
+  chews_cud: Does it chew cud?
+  tawny: Is it tawny-coloured?
+  dark_spots: Does it have dark spots?
+  black_stripes: Does it have black stripes?
+  long_neck: Does it have a long neck?
+  long_legs: Does it have long legs?
+  swims: Does it swim?
+  black_and_white: Is it black and white?
+  good_flier: Is it a strong flier?
+
+goals: [cheetah, tiger, giraffe, zebra, ostrich, penguin, albatross]
+
+rules:
+  - { id: Z1, if: [has_hair], then: mammal }
+  - { id: Z2, if: [gives_milk], then: mammal }
+  - { id: Z3, if: [has_feathers], then: bird }
+  - { id: Z4, if: [flies, lays_eggs], then: bird }
+  - { id: Z5, if: [mammal, eats_meat], then: carnivore }
+  - { id: Z6, if: [mammal, pointed_teeth, claws, forward_eyes], then: carnivore }
+  - { id: Z7, if: [mammal, hooves], then: ungulate }
+  - { id: Z8, if: [mammal, chews_cud], then: ungulate }
+  - { id: Z9, if: [carnivore, tawny, dark_spots], then: cheetah }
+  - { id: Z10, if: [carnivore, tawny, black_stripes], then: tiger }
+  - { id: Z11, if: [ungulate, long_neck, long_legs, dark_spots], then: giraffe }
+  - { id: Z12, if: [ungulate, black_stripes], then: zebra }
+  - { id: Z13, if: [bird, not flies, long_neck, long_legs, black_and_white], then: ostrich }
+  - { id: Z14, if: [bird, not flies, swims, black_and_white], then: penguin }
+  - { id: Z15, if: [bird, good_flier], then: albatross }
+
+cases:
+  - id: cheetah
+    facts: [has_hair, pointed_teeth, claws, forward_eyes, tawny, dark_spots]
+    expect: [carnivore, cheetah, mammal]
+  - id: tiger
+    facts: [gives_milk, eats_meat, tawny, black_stripes]
+    expect: [carnivore, mammal, tiger]
+  - id: giraffe
+    facts: [has_hair, chews_cud, long_neck, long_legs, dark_spots]
+    expect: [giraffe, mammal, ungulate]
+  - id: zebra
+    facts: [gives_milk, hooves, black_stripes]
+    expect: [mammal, ungulate, zebra]
+  - id: ostrich
+    facts: [has_feathers, long_neck, long_legs, black_and_white]
+    expect: [bird, ostrich]
+  - id: penguin
+    facts: [has_feathers, lays_eggs, swims, black_and_white]
+    expect: [bird, penguin]
+  - id: albatross
+    facts: [has_feathers, flies, good_flier]
+    expect: [albatross, bird]
+  - id: housefly
+    note: Trap. It flies and lays eggs, so rule Z4 makes it a bird.
+    facts: [flies, lays_eggs]
+    expect: [bird]
+  - id: platypus
+    note: Lays eggs and has hair; the rules only see a mammal.
+    facts: [has_hair, gives_milk, lays_eggs, swims]
+    expect: [mammal]
+  - id: flying_penguin
+    note: Trap. A penguin that flies fails Z14, and nothing else names it.
+    facts: [has_feathers, flies, swims, black_and_white]
+    expect: [bird]
+  - id: striped_cat
+    note: Both cheetah-like spots and tiger stripes; both rules fire.
+    facts: [has_hair, eats_meat, tawny, dark_spots, black_stripes]
+    expect: [carnivore, cheetah, mammal, tiger]
