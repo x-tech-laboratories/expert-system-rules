@@ -33,6 +33,8 @@ tags:
   routines: The usual steps of everyday activities.
   scripts: Sequences of events that usually happen together.
   licensing: The rules license (permit) a conclusion only in narrow conditions.
+  defaults: Has rules that usually hold, and the exceptions that override them.
+  open-world: Has relations where anything not concluded is unknown rather than false.
   negation: Uses "not" (negation as failure).
   transitivity: Chains a relation through intermediate steps.
   trap-cases: Has cases built to catch a reader who guesses instead of following the rules.

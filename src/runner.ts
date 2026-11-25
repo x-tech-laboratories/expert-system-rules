@@ -4,7 +4,7 @@
 
 import { run_program, type ProgramOptions, type ProgramResult } from "@x-tech-laboratories/x-libs/agent/programs";
 
-import { holds, infer } from "./engine.ts";
+import { answer, infer, type Answer } from "./engine.ts";
 import { questions_of } from "./prompt.ts";
 import type { RuleSet, Triple } from "./rule_set.ts";
 
@@ -12,13 +12,15 @@ import type { RuleSet, Triple } from "./rule_set.ts";
 
 export interface WrongAnswer {
   triple: Triple;
-  expected: boolean;
-  got: boolean | null;
+  expected: Answer;
+  got: Answer | null;
 }
 
 export interface CaseResult {
   id: string;
   wrong: WrongAnswer[];
+  // Triples the rules conclude both to hold and to be false; only checked for a rule set's own cases.
+  conflicts: Triple[];
 }
 
 export interface Score {
@@ -32,22 +34,22 @@ export type ProgramRunner = (argv: readonly string[], options: ProgramOptions) =
 // ── Comparing ────────────────────────────────────────────────────────────────
 
 export function is_correct(result: CaseResult): boolean {
-  return result.wrong.length === 0;
+  return result.wrong.length === 0 && result.conflicts.length === 0;
 }
 
-// Compares each case's written expect and expect_not (got) with what the engine concludes (expected).
+// Compares each case's written expect, expect_not and expect_unknown (got) with what the engine concludes (expected).
 export function check_cases(rule_set: RuleSet): CaseResult[] {
   return rule_set.cases.map(entry => {
     const inference = infer(rule_set, entry.facts);
     const wrong = questions_of(entry)
-      .map(question => ({ triple: question.triple, expected: holds(inference, question.triple), got: question.answer }))
-      .filter(answer => answer.got !== answer.expected);
-    return { id: entry.id, wrong };
+      .map(question => ({ triple: question.triple, expected: answer(rule_set, inference, question.triple), got: question.answer }))
+      .filter(result => result.got !== result.expected);
+    return { id: entry.id, wrong, conflicts: inference.conflicts };
   });
 }
 
 // Scores a model's answers against the engine, one point per question.
-export function score(rule_set: RuleSet, answers: Map<string, (boolean | null)[]>): Score {
+export function score(rule_set: RuleSet, answers: Map<string, (Answer | null)[]>): Score {
   let total = 0;
   const cases = rule_set.cases.map(entry => {
     const inference = infer(rule_set, entry.facts);
@@ -55,9 +57,9 @@ export function score(rule_set: RuleSet, answers: Map<string, (boolean | null)[]
     const questions = questions_of(entry);
     total += questions.length;
     const wrong = questions
-      .map((question, index) => ({ triple: question.triple, expected: holds(inference, question.triple), got: given[index] ?? null }))
-      .filter(answer => answer.got !== answer.expected);
-    return { id: entry.id, wrong };
+      .map((question, index) => ({ triple: question.triple, expected: answer(rule_set, inference, question.triple), got: given[index] ?? null }))
+      .filter(result => result.got !== result.expected);
+    return { id: entry.id, wrong, conflicts: [] };
   });
   const missed = cases.reduce((sum, result) => sum + result.wrong.length, 0);
   return { cases, correct: total - missed, total };

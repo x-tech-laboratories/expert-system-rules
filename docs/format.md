@@ -19,8 +19,9 @@ file loads, and a problem is refused with a message naming it.
 | `imports` | no | Other rule sets whose facts and rules this one builds on, such as `[core/upper]` |
 | `relations` | yes, unless a vocabulary or import provides them all | Each relation the file defines and what it means |
 | `facts` | no | Triples that hold in every case |
-| `rules` | yes | The rules, each with `id`, `if` and `then`, and optionally `source`, `method` and `note` |
-| `cases` | no | Test cases, each with `id`, `facts`, `expect`, `expect_not` and an optional `note` |
+| `rules` | yes | The rules, each with `id`, `if` and `then`, and optionally `usually`, `source`, `method` and `note` |
+| `world` | no | `closed` (the default) or `open`, for relations that do not say |
+| `cases` | no | Test cases, each with `id`, `facts`, `expect`, `expect_not`, `expect_unknown` and an optional `note` |
 
 A field that is not in this table is refused, so a misspelt one cannot be silently ignored.
 
@@ -66,6 +67,40 @@ too, so `?x is grounded` and `?x is flier` are separate, as are `cat visits mous
 `rabbit visits mouse`. A rule set where a conclusion depends on its own
 negation has no single answer and is refused.
 
+## Defaults and exceptions
+
+Many everyday rules hold only usually. A rule marked `usually: true` is a default: its conclusion
+holds unless the opposite is concluded. The opposite is written with `not` in a conclusion or a fact,
+and means the triple is false, not merely unconcluded:
+
+```yaml
+- { id: T1, if: [?x is_a bird], then: ?x can fly, usually: true }
+- { id: T2, if: [?x is_a penguin], then: not ?x can fly }
+```
+
+A penguin is a bird, so T1 would conclude that it flies, but T2 concludes it does not, so T1 gives
+way. An exception can itself be a default. Two defaults that override each other on the same kind
+of triple (birds usually fly, penguins usually do not) are refused for now, since neither can be put
+first; make the more specific one strict. A strict rule and a denial concluding opposite things about
+the same triple is a conflict, and `npm run check` fails the case.
+
+## Closed and open worlds
+
+By default a rule set is a closed world: what is not concluded is false, and `not` in a condition
+reads it that way. General knowledge is often an open world instead: if nothing says whether a dog
+can fly, the honest answer is unknown. A relation, or a whole rule set, can say so:
+
+```yaml
+world: open                      # every relation that does not say otherwise
+relations:
+  can: { meaning: The subject is able to do this., world: open }
+```
+
+A triple of an open-world relation is true when concluded, false when its denial is concluded, and
+unknown otherwise. A `not` condition may not read an open-world relation, since a missing triple
+there proves nothing; write the exception as a `not` conclusion and mark the general rule `usually`.
+Facts brought in from Wikidata, which is never complete, belong in open-world relations.
+
 ## Cases
 
 ```yaml
@@ -76,8 +111,8 @@ negation has no single answer and is refused.
   expect_not: [cheese is at_risk_of_spoiling]
 ```
 
-A case adds its `facts` to the shared ones and asks questions: each triple under `expect` must hold
-and each under `expect_not` must not. A case may describe several things at once. Write the answers
+A case adds its `facts` to the shared ones and asks questions: each triple under `expect` must hold,
+each under `expect_not` must be false, and each under `expect_unknown` must be unknown. A case may describe several things at once. Write the answers
 by hand from the rules and let `npm run check` confirm them; a disagreement is either a slip in the
 case or a rule that does not say what was meant. The same questions are what a model is asked by
 `bench`, one point each.

@@ -112,12 +112,12 @@ cases:
       "fact must be a list",
       `rule id "A" is used twice`,
       `rule A needs a list of conditions under "if"`,
-      `rule D "then" must be "subject relation object", not undefined`,
+      `rule D "then" must be "subject relation object", optionally after "not", not undefined`,
       "rule 4 must be a mapping with id, if and then",
       "rule 5 needs an id",
       `case id "one" is used twice`,
-      "case one needs at least one question under expect or expect_not",
-      "case 3 must be a mapping with id and questions under expect or expect_not",
+      "case one needs at least one question under expect, expect_not or expect_unknown",
+      "case 3 must be a mapping with id and questions under expect, expect_not or expect_unknown",
       "case 4 needs an id",
     ]);
   });
@@ -160,7 +160,7 @@ describe("parse_triple", () => {
 
 describe("stratify", () => {
   const triple = (text: string) => parse_triple(text);
-  const meta = { source: "", method: "hand_written", note: "", from: "" };
+  const meta = { usually: false, source: "", method: "hand_written", note: "", from: "" };
 
   it("separates kinds by their fixed object and allows positive loops", () => {
     const rules = [

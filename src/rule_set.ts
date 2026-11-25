@@ -25,7 +25,10 @@ export const methods = ["hand_written", "llm_drafted", "llm_drafted_human_review
 export interface Rule {
   id: string;
   conditions: Condition[];
+  // A denial (see deny) when the rule concludes that something is false.
   conclusion: Triple;
+  // A default: the conclusion holds unless the opposite is concluded.
+  usually: boolean;
   source: string;
   method: string;
   note: string;
@@ -33,9 +36,15 @@ export interface Rule {
   from: string;
 }
 
+// Closed: what is not concluded is false. Open: what is not concluded is unknown.
+export type World = "closed" | "open";
+export const worlds: readonly World[] = ["closed", "open"];
+
 export interface Relation {
   meaning: string;
   wikidata: string;
+  // "" when the relation takes the rule set's world.
+  world: World | "";
   // The vocabulary or imported rule set it comes from, or "" when the rule set declares it.
   from: string;
 }
@@ -46,6 +55,7 @@ export interface Case {
   facts: Triple[];
   expect: Triple[];
   expect_not: Triple[];
+  expect_unknown: Triple[];
 }
 
 export interface RuleSet {
@@ -56,6 +66,7 @@ export interface RuleSet {
   license: string;
   source: string;
   method: string;
+  world: World;
   tags: string[];
   origin: string;
   vocabularies: string[];
@@ -106,8 +117,25 @@ export function is_variable(term: string): boolean {
   return term.startsWith("?");
 }
 
+// A denial says a triple is false; it is kept as the same triple under the relation's name marked with "!".
+const denial_mark = "!";
+
+export function is_denial(triple: Triple): boolean {
+  return triple.relation.startsWith(denial_mark);
+}
+
+export function base_relation(relation: string): string {
+  return relation.startsWith(denial_mark) ? relation.slice(denial_mark.length) : relation;
+}
+
+// The triple saying the opposite: the denial of a triple, or the triple a denial denies.
+export function opposite(triple: Triple): Triple {
+  const relation = is_denial(triple) ? base_relation(triple.relation) : denial_mark + triple.relation;
+  return { subject: triple.subject, relation, object: triple.object };
+}
+
 export function triple_text(triple: Triple): string {
-  return `${triple.subject} ${triple.relation} ${triple.object}`;
+  return `${is_denial(triple) ? "not " : ""}${triple.subject} ${base_relation(triple.relation)} ${triple.object}`;
 }
 
 export function condition_text(condition: Condition): string {
@@ -115,7 +143,19 @@ export function condition_text(condition: Condition): string {
 }
 
 export function rule_text(rule: Rule): string {
-  return `${rule.id}: IF ${rule.conditions.map(condition_text).join(" AND ")} THEN ${triple_text(rule.conclusion)}`;
+  const conclusion = triple_text(rule.conclusion).replace(/^not /, "NOT ");
+  return `${rule.id}: IF ${rule.conditions.map(condition_text).join(" AND ")} THEN ${rule.usually ? "USUALLY " : ""}${conclusion}`;
+}
+
+// The conditions the engine checks: a default also needs its opposite not to be concluded.
+export function working_conditions(rule: Rule): Condition[] {
+  return rule.usually ? [...rule.conditions, { ...opposite(rule.conclusion), negated: true }] : rule.conditions;
+}
+
+// Whether a missing triple of this relation is unknown rather than false; a denial is always known.
+export function is_open(rule_set: Pick<RuleSet, "world" | "relations">, relation: string): boolean {
+  if (relation.startsWith(denial_mark)) return false;
+  return (rule_set.relations.get(relation)?.world || rule_set.world) === "open";
 }
 
 interface TripleOptions {
@@ -151,6 +191,9 @@ function read_triples(value: unknown, where: string, options: TripleOptions, pro
 }
 
 const plain = ({ subject, relation, object }: Triple): Triple => ({ subject, relation, object });
+
+// A triple written with "not" in a fact or a conclusion is a denial.
+const stated = (condition: Condition): Triple => (condition.negated ? opposite(condition) : plain(condition));
 
 // Reads one triple typed by a person, such as a question on the command line; a ?variable is allowed.
 export function parse_triple(text: string): Triple {
@@ -198,6 +241,14 @@ function read_method(mapping: Mapping, where: string, fallback: string, problems
   return method || fallback;
 }
 
+function read_world<Fallback extends World | "">(mapping: Mapping, where: string, fallback: Fallback, problems: string[]): World | Fallback {
+  const world = mapping.world;
+  if (world === undefined) return fallback;
+  if ((worlds as readonly unknown[]).includes(world)) return world as World;
+  problems.push(`${where}"world" must be closed or open, not ${JSON.stringify(world)}`);
+  return fallback;
+}
+
 function unknown_keys(mapping: Mapping, allowed: string[], where: string, problems: string[]): void {
   for (const key of Object.keys(mapping)) if (!allowed.includes(key)) problems.push(`${where} has an unknown field "${key}"; the fields are ${allowed.join(", ")}`);
 }
@@ -213,12 +264,13 @@ function read_relations(value: unknown, problems: string[]): Map<string, Relatio
   for (const [name, entry] of Object.entries(value)) {
     if (!constant_pattern.test(name)) problems.push(`relation "${name}" must be lower_snake_case`);
     const details = is_mapping(entry) ? entry : { meaning: entry };
-    if (is_mapping(entry)) unknown_keys(entry, ["meaning", "wikidata"], `relation "${name}"`, problems);
+    if (is_mapping(entry)) unknown_keys(entry, ["meaning", "wikidata", "world"], `relation "${name}"`, problems);
     const meaning = typeof details.meaning === "string" ? details.meaning.trim() : "";
     if (!meaning) problems.push(`relation "${name}" needs a meaning`);
     const wikidata = details.wikidata === undefined ? "" : String(details.wikidata).trim();
     if (details.wikidata !== undefined && !wikidata_pattern.test(wikidata)) problems.push(`relation "${name}": "wikidata" must be a property id such as P31, not "${wikidata}"`);
-    relations.set(name, { meaning, wikidata, from: "" });
+    const world = read_world(details, `relation "${name}": `, "", problems);
+    relations.set(name, { meaning, wikidata, world, from: "" });
   }
   return relations;
 }
@@ -250,7 +302,7 @@ function signatures_overlap(first: string, second: string): boolean {
 
 // Puts every rule in a layer that runs after everything its conditions read, and strictly after anything it negates; null when a negation loops back on itself.
 export function stratify(rules: Rule[], given: Triple[]): Map<string, number> | null {
-  const kinds = [...new Set([...given, ...rules.flatMap(rule => [rule.conclusion, ...rule.conditions])].map(signature))];
+  const kinds = [...new Set([...given, ...rules.flatMap(rule => [rule.conclusion, ...working_conditions(rule)])].map(signature))];
   const layer = new Map(kinds.map(kind => [kind, 0]));
   const overlapping = (kind: string) => kinds.filter(other => signatures_overlap(kind, other));
 
@@ -259,7 +311,7 @@ export function stratify(rules: Rule[], given: Triple[]): Map<string, number> | 
     settled = true;
     for (const rule of rules) {
       const heads = overlapping(signature(rule.conclusion));
-      for (const condition of rule.conditions) {
+      for (const condition of working_conditions(rule)) {
         for (const read of overlapping(signature(condition))) {
           const needed = layer.get(read)! + (condition.negated ? 1 : 0);
           for (const head of heads) {
@@ -276,7 +328,7 @@ export function stratify(rules: Rule[], given: Triple[]): Map<string, number> | 
 
   const rule_strata = new Map<string, number>();
   for (const rule of rules) {
-    const needs = rule.conditions.flatMap(condition => overlapping(signature(condition)).map(read => layer.get(read)! + (condition.negated ? 1 : 0)));
+    const needs = working_conditions(rule).flatMap(condition => overlapping(signature(condition)).map(read => layer.get(read)! + (condition.negated ? 1 : 0)));
     rule_strata.set(rule.id, Math.max(0, ...needs));
   }
   return rule_strata;
@@ -312,9 +364,9 @@ function merge_relations(into: Map<string, Relation>, from: Map<string, Relation
 
 // ── Parsing ──────────────────────────────────────────────────────────────────
 
-const rule_set_fields = ["id", "title", "description", "version", "license", "source", "method", "tags", "vocabularies", "imports", "relations", "facts", "rules", "cases"];
-const rule_fields = ["id", "if", "then", "source", "method", "note"];
-const case_fields = ["id", "note", "facts", "expect", "expect_not"];
+const rule_set_fields = ["id", "title", "description", "version", "license", "source", "method", "world", "tags", "vocabularies", "imports", "relations", "facts", "rules", "cases"];
+const rule_fields = ["id", "if", "then", "usually", "source", "method", "note"];
+const case_fields = ["id", "note", "facts", "expect", "expect_not", "expect_unknown"];
 
 export function parse_rule_set(text: string, origin: string, library: Library = empty_library): RuleSet {
   const document = read_yaml(text, origin);
@@ -327,6 +379,7 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
   const license = read_text(document, "license", problems);
   const source = read_text(document, "source", problems);
   const method = read_method(document, "", "hand_written", problems);
+  const world = read_world(document, "", "closed", problems);
   const tags = read_names(document.tags, `"tags"`, problems);
   const vocabularies = read_names(document.vocabularies, `"vocabularies"`, problems);
   const imports = read_names(document.imports, `"imports"`, problems);
@@ -339,7 +392,7 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
   }
 
   const ground = { variables: false, negation: false };
-  const facts = read_triples(document.facts, "fact", ground, problems).map(plain);
+  const facts = read_triples(document.facts, "fact", { variables: false, negation: true }, problems).map(stated);
 
   const rules: Rule[] = [];
   if (!Array.isArray(document.rules) || document.rules.length === 0) problems.push(`"rules" must be a non-empty list`);
@@ -358,7 +411,8 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
       const conditions = read_triples(entry.if, `rule ${name} condition`, { variables: true, negation: true }, problems);
       const has_conditions = Array.isArray(entry.if) && entry.if.length > 0;
       if (!has_conditions) problems.push(`rule ${name} needs a list of conditions under "if"`);
-      const conclusion = read_triple(entry.then, `rule ${name} "then"`, { variables: true, negation: false }, problems);
+      const conclusion = read_triple(entry.then, `rule ${name} "then"`, { variables: true, negation: true }, problems);
+      if (entry.usually !== undefined && typeof entry.usually !== "boolean") problems.push(`rule ${name}: "usually" must be true or false`);
       const rule_source = read_text(entry, "source", problems, false, `rule ${name}: `);
       const rule_method = read_method(entry, `rule ${name}: `, method, problems);
       const note = read_text(entry, "note", problems, false, `rule ${name}: `);
@@ -369,7 +423,7 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
         .flatMap(triple => [triple.subject, triple.object])
         .filter(term => is_variable(term) && !bound.has(term));
       for (const variable of new Set(unbound)) problems.push(`rule ${name}: ${variable} must appear in a condition without "not"`);
-      rules.push({ id: rule_id, conditions, conclusion: plain(conclusion), source: rule_source, method: rule_method, note, from: "" });
+      rules.push({ id: rule_id, conditions, conclusion: stated(conclusion), usually: entry.usually === true, source: rule_source, method: rule_method, note, from: "" });
     });
   }
 
@@ -396,7 +450,7 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
   const seen_cases = new Set<string>();
   for (const [index, entry] of (Array.isArray(document.cases) ? document.cases : []).entries()) {
     if (!is_mapping(entry)) {
-      problems.push(`case ${index + 1} must be a mapping with id and questions under expect or expect_not`);
+      problems.push(`case ${index + 1} must be a mapping with id and questions under expect, expect_not or expect_unknown`);
       continue;
     }
     const case_id = typeof entry.id === "string" || typeof entry.id === "number" ? String(entry.id).trim() : "";
@@ -405,24 +459,32 @@ export function parse_rule_set(text: string, origin: string, library: Library = 
     else if (seen_cases.has(case_id)) problems.push(`case id "${case_id}" is used twice`);
     seen_cases.add(case_id);
     unknown_keys(entry, case_fields, `case ${name}`, problems);
-    const case_facts = read_triples(entry.facts, `case ${name} fact`, ground, problems).map(plain);
+    const case_facts = read_triples(entry.facts, `case ${name} fact`, { variables: false, negation: true }, problems).map(stated);
     const expect = read_triples(entry.expect, `case ${name} expect`, ground, problems).map(plain);
     const expect_not = read_triples(entry.expect_not, `case ${name} expect_not`, ground, problems).map(plain);
+    const expect_unknown = read_triples(entry.expect_unknown, `case ${name} expect_unknown`, ground, problems).map(plain);
     const written = (value: unknown) => (Array.isArray(value) ? value.length : 0);
-    if (written(entry.expect) + written(entry.expect_not) === 0) problems.push(`case ${name} needs at least one question under expect or expect_not`);
-    cases.push({ id: case_id, note: typeof entry.note === "string" ? entry.note.trim() : "", facts: case_facts, expect, expect_not });
+    if (written(entry.expect) + written(entry.expect_not) + written(entry.expect_unknown) === 0) problems.push(`case ${name} needs at least one question under expect, expect_not or expect_unknown`);
+    cases.push({ id: case_id, note: typeof entry.note === "string" ? entry.note.trim() : "", facts: case_facts, expect, expect_not, expect_unknown });
   }
 
-  const used = [...facts, ...rules.flatMap(rule => [rule.conclusion, ...rule.conditions]), ...cases.flatMap(entry => [...entry.facts, ...entry.expect, ...entry.expect_not])];
-  for (const relation of new Set(used.map(triple => triple.relation))) {
+  const used = [...facts, ...rules.flatMap(rule => [rule.conclusion, ...rule.conditions]), ...cases.flatMap(entry => [...entry.facts, ...entry.expect, ...entry.expect_not, ...entry.expect_unknown])];
+  for (const relation of new Set(used.map(triple => base_relation(triple.relation)))) {
     if (!relations.has(relation)) problems.push(`the relation "${relation}" is used but not listed under "relations" or in a vocabulary`);
+  }
+
+  // "not" in a condition reads a closed world; in an open one, write the exception as a "not" conclusion and the rule with "usually".
+  for (const rule of rules.filter(rule => !rule.from)) {
+    for (const condition of rule.conditions.filter(condition => condition.negated && is_open({ world, relations }, condition.relation))) {
+      problems.push(`rule ${rule.id}: "not ${triple_text(condition)}" reads the open-world relation "${condition.relation}", where a missing triple is unknown; conclude "not ..." in an exception and mark this rule "usually" instead`);
+    }
   }
 
   const rule_strata = stratify(rules, [...facts, ...cases.flatMap(entry => entry.facts)]);
   if (!rule_strata) problems.push("a conclusion depends on its own negation, so the rules have no single answer");
 
   if (problems.length) throw new RuleSetError(origin, problems);
-  return { id, title, description, version, license, source, method, tags, origin, vocabularies, imports, relations, facts, rules, cases, rule_strata: rule_strata! };
+  return { id, title, description, version, license, source, method, world, tags, origin, vocabularies, imports, relations, facts, rules, cases, rule_strata: rule_strata! };
 }
 
 // ── Catalog ──────────────────────────────────────────────────────────────────

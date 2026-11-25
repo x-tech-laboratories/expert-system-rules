@@ -15,6 +15,7 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | [Animal identification](rulesets/animals/animal-identification.yaml) | animals | 15 | 11 | classification, adapted from a textbook example |
 | [Upper kinds](rulesets/core/upper.yaml) | core | 2 | 2 | the shallow tree of kinds other rule sets import |
 | [Kitchen common sense](rulesets/commonsense/kitchen.yaml) | commonsense | 7 (+2 imported) | 5 | kinds of food, where things are, what spoils |
+| [Typical and exceptional](rulesets/commonsense/typical.yaml) | commonsense | 7 (+2 imported) | 6 | defaults and exceptions, open-world unknowns |
 | [Everyday physics](rulesets/commonsense/physics.yaml) | commonsense | 13 | 8 | support and falling, breaking, floating, melting, heat, fire |
 | [People, needs and manners](rulesets/commonsense/people.yaml) | commonsense | 11 | 7 | needs, wants, feelings, thanks, loans, safety |
 | [Sizes, weights and units](rulesets/commonsense/quantities.yaml) | commonsense | 7 | 5 | size classes, bigger and heavier, what fits, comparable units |
