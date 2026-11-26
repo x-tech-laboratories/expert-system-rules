@@ -37,10 +37,11 @@ const usage = `Usage:
   expert-system-rules prompt <file.yaml>             print the prompt a model is given
   expert-system-rules bench [--runs N] [file.yaml ...] -- <command ...>
                                                      send each rule set's prompt to a command on stdin and score its JSON answer
-  expert-system-rules bench-extract [--every N] [--jobs N] [--grammar] <meta-file.jsonl> -- <command ...>
+  expert-system-rules bench-extract [--every N] [--jobs N] [--rounds N] [--grammar] <meta-file.jsonl> -- <command ...>
                                                      give a command every Nth ProofWriter theory's English (default 20), and score
                                                      the facts and rules it writes by the engine's answers to the theory's questions;
-                                                     --grammar also passes --grammar-file <file.gbnf> limiting the reply to the format
+                                                     --grammar also passes --grammar-file <file.gbnf> limiting the reply to the format;
+                                                     --rounds N sends a refused reply back with the reason, up to N tries (default 1)
   expert-system-rules draft --source <text-file> --id <id> --subject <folder> --cite <credit> [--license <spdx>] [--rounds N] -- <command ...>
                                                      ask a command to draft a rule set from a text, send it back with every problem the
                                                      checks find (up to N rounds, default 3), and write it to rulesets/<folder>/<id>.yaml
@@ -178,10 +179,11 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
   const command = split < 0 ? [] : args.slice(split + 1);
   const every = take_count(split < 0 ? args : args.slice(0, split), "--every", 20);
   const jobs = take_count(every.rest, "--jobs", 1);
-  const grammar = jobs.rest.includes("--grammar");
-  const files = jobs.rest.filter(arg => arg !== "--grammar");
-  if (!command.length || every.value === null || jobs.value === null || files.length !== 1) {
-    line(context.err, "bench-extract needs a ProofWriter meta file and a command after --; --every and --jobs take whole numbers of 1 or more");
+  const rounds = take_count(jobs.rest, "--rounds", 1);
+  const grammar = rounds.rest.includes("--grammar");
+  const files = rounds.rest.filter(arg => arg !== "--grammar");
+  if (!command.length || every.value === null || jobs.value === null || rounds.value === null || files.length !== 1) {
+    line(context.err, "bench-extract needs a ProofWriter meta file and a command after --; --every, --jobs and --rounds take whole numbers of 1 or more");
     return 2;
   }
   const grammar_folder = grammar ? await mkdtemp(join(tmpdir(), "bench-extract-")) : "";
@@ -205,6 +207,7 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
     while (next < tasks.length) {
       const index = next++;
       const task = tasks[index];
+      let round = 1;
       try {
         let argv = command;
         if (grammar) {
@@ -212,13 +215,21 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
           await writeFile(file, extraction_grammar(task));
           argv = [...command, "--grammar-file", file];
         }
-        scores[index] = score_extraction(task, await ask_model(argv, extraction_prompt(task), context.run));
+        // A refused reply goes back with the engine's reason, as draft does, until it loads or the rounds run out.
+        let previous: { reply: string; problem: string } | undefined;
+        for (round = 1; round <= rounds.value!; round++) {
+          const reply = await ask_model(argv, extraction_prompt(task, previous), context.run);
+          scores[index] = score_extraction(task, reply);
+          if (!scores[index].problem) break;
+          previous = { reply: yaml_of(reply), problem: scores[index].problem };
+        }
+        round = Math.min(round, rounds.value!);
       } catch (error) {
         scores[index] = { id: task.id, correct: 0, total: task.reference.cases.reduce((sum, entry) => sum + questions_of(entry).length, 0), problem: (error as Error).message };
       }
       // Each theory's score is printed as soon as it is known, so a run cut short still leaves its results.
       const result = scores[index];
-      line(context.out, `${result.id}: ${result.correct}/${result.total} answers${result.problem ? ` (unusable: ${result.problem})` : ""}`);
+      line(context.out, `${result.id}: ${result.correct}/${result.total} answers${round > 1 ? ` (round ${round})` : ""}${result.problem ? ` (unusable: ${result.problem})` : ""}`);
     }
   };
   await Promise.all(Array.from({ length: jobs.value }, worker));
