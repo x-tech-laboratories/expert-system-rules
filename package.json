@@ -24,12 +24,12 @@
     "import-proofwriter": "node src/cli.ts import-proofwriter"
   },
   "dependencies": {
-    "@x-tech-laboratories/x-libs": "^0.75.0",
+    "@x-tech-laboratories/x-libs": "^0.79.0",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/node": "^24.19.2",
-    "@vitest/coverage-v8": "^5.1.1",
+    "@types/node": "^24.19.4",
+    "@vitest/coverage-v8": "^5.1.2",
     "oxlint": "^1.95.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"
