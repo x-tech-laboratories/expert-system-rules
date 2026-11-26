@@ -1,10 +1,10 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { run_cli } from "../src/cli.ts";
-import { extraction_prompt, score_extraction, type ExtractionTask } from "../src/extract.ts";
+import { extraction_grammar, extraction_prompt, score_extraction, type ExtractionTask } from "../src/extract.ts";
 import { convert_theory } from "../src/importers/proofwriter.ts";
 import { parse_rule_set } from "../src/rule_set.ts";
 import type { ProgramRunner } from "../src/runner.ts";
@@ -52,6 +52,20 @@ describe("extraction", () => {
     expect(prompt).toContain("chases (The subject chases the object.)");
     expect(prompt).toContain("is_a (The subject is one of the things the theory talks about.)");
     expect(prompt).not.toContain("?x chases cow");
+  });
+
+  it("writes a grammar of the theory's names and relations", () => {
+    expect(extraction_grammar(task()).split("\n")).toEqual([
+      'root ::= "facts:\\n" fact{0,15} "rules:\\n" rule{1,2}',
+      'fact ::= "  - " name " " relation " " name "\\n"',
+      'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " relation " " term " }\\n"',
+      'condition ::= "not "? term " " relation " " term',
+      "term ::= name | variable",
+      'variable ::= "?x" | "?y" | "?z"',
+      'name ::= "bald_eagle" | "big" | "cow" | "loud" | "needed" | "quiet" | "thing"',
+      'relation ::= "chases" | "is" | "is_a" | "needs" | "visits"',
+      "",
+    ]);
   });
 
   it("scores a faithful translation, fenced or not", () => {
@@ -113,6 +127,20 @@ describe("bench-extract", () => {
         "",
       ].join("\n"),
     );
+  });
+
+  it("passes a grammar file for each theory with --grammar", async () => {
+    const folder = await source([sample_record]);
+    const seen: string[][] = [];
+    const runner: ProgramRunner = async argv => {
+      seen.push([...argv]);
+      return { exit_code: 0, stdout: faithful, stderr: "" };
+    };
+    const result = await run(["bench-extract", "--grammar", "meta-test.jsonl", "--", "model", "-x"], folder, runner);
+
+    expect(result.out).toContain("total: 4/4 answers");
+    expect(seen[0].slice(0, 3)).toEqual(["model", "-x", "--grammar-file"]);
+    expect(await readFile(seen[0][3], "utf8")).toContain('name ::= "bald_eagle"');
   });
 
   it("needs a file, a command and whole numbers", async () => {
