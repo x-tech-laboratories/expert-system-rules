@@ -82,3 +82,27 @@ the format unaided. Constrained output (a JSON schema or a llama.cpp grammar tha
 declared relations, the given names and `?variables`) should recover most of the unusable replies,
 and is the next thing to try before using a local model in `draft`. Hosted models remain the choice
 for drafting from messy text.
+
+## 2026-11-26: the local 4B model with a grammar (`bench-extract --grammar`)
+
+The same 50 theories and model as above, with each reply limited by a llama.cpp grammar to the
+theory's relations and names, `?x`/`?y`/`?z`, the facts-then-rules shape, and at most as many rules
+as the theory has sentences.
+
+| Theories | Without grammar | With grammar | Unusable replies |
+| --- | --- | --- | --- |
+| Depth-5 (379 answers) | 251 (66%) | 263 (69%) | 7 → 5 |
+| NatLang (338 answers) | 114 (34%) | 261 (77%) | 16 → 2 |
+
+**The format problem is solved; the meaning problem remains.** No reply broke the format. The 7
+replies still unusable are refused for their meaning, which a grammar cannot check: 5 have a
+conclusion that depends on its own negation (often through the `?x is_a thing` guard, written as a
+conclusion instead of a fact), and 2 use a variable only under `not`. Among usable replies the share
+of right answers fell (depth-5 263/308, 85%; NatLang 261/309, 84%), because replies that used to be
+refused for their format now load and carry their slips into the score.
+
+**What it shows.** With a grammar, a 4B model on a 4 GB GPU turns paraphrased English into loadable
+rules nearly every time, and doubles its NatLang score. It is still well behind hosted models (Haiku
+623/679 and Sonnet 645/679 on NatLang across 49 theories), so it can draft for review but not unattended.
+The next gains would come from feeding the engine's refusal back to the model for a second round, as
+`draft` already does, and from stating the guard rule more plainly in the prompt.
