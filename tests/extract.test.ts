@@ -58,14 +58,29 @@ describe("extraction", () => {
     expect(extraction_grammar(task()).split("\n")).toEqual([
       'root ::= "facts:\\n" fact{0,15} "rules:\\n" rule{1,2}',
       'fact ::= "  - " name " " relation " " name "\\n"',
-      'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " relation " " term " }\\n"',
+      'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " conclusion " " term " }\\n"',
       'condition ::= "not "? term " " relation " " term',
       "term ::= name | variable",
       'variable ::= "?x" | "?y" | "?z"',
       'name ::= "bald_eagle" | "big" | "cow" | "loud" | "needed" | "quiet" | "thing"',
       'relation ::= "chases" | "is" | "is_a" | "needs" | "visits"',
+      'conclusion ::= "chases" | "is" | "needs" | "visits"',
       "",
     ]);
+  });
+
+  it("explains the guard, and shows a refused reply and its reason on a retry", () => {
+    expect(extraction_prompt(task())).toContain('Never write "is_a thing" as a rule\'s conclusion.');
+    expect(extraction_prompt(task())).not.toContain("Your previous answer was refused");
+    const again = extraction_prompt(task(), { reply: "facts: []\n", problem: "rule R1: ?x must appear in a condition without not" });
+    expect(again).toContain("Your previous answer was refused:\nrule R1: ?x must appear in a condition without not\n\nPrevious answer:\nfacts: []");
+  });
+
+  it("lets a rule conclude is_a only when the theory itself has that relation", () => {
+    const reference_yaml = convert_theory(sample_record).replace("is_a: The subject is one of the things the theory talks about.", "is_a: The subject is an instance of this kind.");
+    const own: ExtractionTask = { id: "own", english: sample_record.theory, reference_yaml, reference: parse_rule_set(reference_yaml, "own") };
+
+    expect(extraction_grammar(own)).toContain('conclusion ::= "chases" | "is" | "is_a" | "needs" | "visits"');
   });
 
   it("scores a faithful translation, fenced or not", () => {
@@ -143,10 +158,26 @@ describe("bench-extract", () => {
     expect(await readFile(seen[0][3], "utf8")).toContain('name ::= "bald_eagle"');
   });
 
+  it("sends a refused reply back with its reason, up to --rounds tries", async () => {
+    const folder = await source([sample_record, { ...sample_record, id: "RelNeg-CWA-D1-9" }]);
+    const prompts: string[] = [];
+    const broken = "rules:\n  - { id: R1, if: [not ?x is big], then: ?x is loud }\n";
+    const runner: ProgramRunner = async (_argv, options) => {
+      prompts.push(String(options.stdin));
+      return { exit_code: 0, stdout: prompts.length === 2 ? faithful : broken, stderr: "" };
+    };
+    const result = await run(["bench-extract", "--every", "1", "--rounds", "2", "meta-test.jsonl", "--", "model"], folder, runner);
+
+    expect(prompts).toHaveLength(4);
+    expect(prompts[1]).toContain("Your previous answer was refused:");
+    expect(result.out.split("\n")[0]).toBe("RelNeg-CWA-D1-7: 4/4 answers (round 2)");
+    expect(result.out.split("\n")[1]).toMatch(/^RelNeg-CWA-D1-9: 0\/4 answers \(round 2\) \(unusable: /);
+  });
+
   it("needs a file, a command and whole numbers", async () => {
     const folder = await source([sample_record]);
 
-    for (const args of [["meta-test.jsonl"], ["--every", "0", "meta-test.jsonl", "--", "m"], ["--jobs", "x", "meta-test.jsonl", "--", "m"], ["--", "m"]]) {
+    for (const args of [["meta-test.jsonl"], ["--every", "0", "meta-test.jsonl", "--", "m"], ["--jobs", "x", "meta-test.jsonl", "--", "m"], ["--rounds", "0", "meta-test.jsonl", "--", "m"], ["--", "m"]]) {
       expect((await run(["bench-extract", ...args], folder)).code).toBe(2);
     }
     expect((await run(["bench-extract", "meta-test.jsonl", "--", "m"], folder, async () => ({ exit_code: 0, stdout: faithful, stderr: "" }))).out).toContain("total: 4/4 answers, 1/1 theories fully right, 0 unusable");

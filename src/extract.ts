@@ -37,7 +37,8 @@ function names_of(rule_set: RuleSet): string[] {
   return [...new Set(triples.flatMap(triple => [triple.subject, triple.object]).filter(term => !is_variable(term) && term !== "thing"))].sort();
 }
 
-export function extraction_prompt(task: ExtractionTask): string {
+// The prompt; on a retry, also the previous reply and why the engine refused it.
+export function extraction_prompt(task: ExtractionTask, previous?: { reply: string; problem: string }): string {
   const relations = new Map([...task.reference.relations].map(([name, relation]) => [name, relation.meaning]));
   if (!relations.has(guard_relation)) relations.set(guard_relation, guard_meaning);
   return [
@@ -52,13 +53,19 @@ export function extraction_prompt(task: ExtractionTask): string {
     "Rules use variables written ?x, ?y for 'something' or 'someone'. A rule is { id: R1, if: [conditions], then: conclusion }.",
     'A condition may start with "not": it then holds when its triple cannot be concluded at all (closed world).',
     "Every variable in a not condition or in the conclusion must also appear in a condition without not.",
-    `For a rule like "if something is not big then it is red", add the condition "?x ${guard_relation} thing" and a fact "<name> ${guard_relation} thing" for every individual.`,
+    `"${guard_relation} thing" is only a helper, never something the theory says. Write a fact "<name> ${guard_relation} thing" for every individual,`,
+    `and use "?x ${guard_relation} thing" only as a condition, in a rule whose variable otherwise appears only after not.`,
+    `For example, "if something is not big then it is red" is { id: R1, if: [?x ${guard_relation} thing, not ?x is big], then: ?x is red }.`,
+    `Never write "${guard_relation} thing" as a rule's conclusion.`,
     "",
     "Answer with YAML only, in this shape:",
     "facts:",
     "  - bob is big",
     "rules:",
     "  - { id: R1, if: [?x is big, not ?x is red], then: ?x is blue }",
+    ...(previous
+      ? ["", "Your previous answer was refused:", previous.problem, "", "Previous answer:", previous.reply.trim(), "", "Fix the problem and answer with the whole corrected YAML only."]
+      : []),
   ].join("\n");
 }
 
@@ -70,6 +77,10 @@ export function extraction_prompt(task: ExtractionTask): string {
 export function extraction_grammar(task: ExtractionTask): string {
   const literal = (word: string) => JSON.stringify(word);
   const relations = [...new Set([...task.reference.relations.keys(), guard_relation])].sort();
+  // The guard is a helper fact and condition; a rule may only conclude is_a when the theory itself has that relation
+  // (the converter adds it with the guard's meaning when it needs the guard).
+  const own_guard = task.reference.relations.get(guard_relation)?.meaning === guard_meaning;
+  const concluded = task.reference.relations.has(guard_relation) && !own_guard ? relations : relations.filter(relation => relation !== guard_relation);
   const names = [...new Set([...names_of(task.reference), "thing"])].sort();
   // A small model at temperature 0 can repeat a line until it runs out of tokens, so the counts are bounded:
   // no more rules than the theory has sentences, and room for several facts per sentence plus each name's guard.
@@ -77,12 +88,13 @@ export function extraction_grammar(task: ExtractionTask): string {
   return [
     `root ::= "facts:\\n" fact{0,${sentences * 4 + names.length}} "rules:\\n" rule{1,${sentences}}`,
     'fact ::= "  - " name " " relation " " name "\\n"',
-    'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " relation " " term " }\\n"',
+    'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " conclusion " " term " }\\n"',
     'condition ::= "not "? term " " relation " " term',
     "term ::= name | variable",
     'variable ::= "?x" | "?y" | "?z"',
     `name ::= ${names.map(literal).join(" | ")}`,
     `relation ::= ${relations.map(literal).join(" | ")}`,
+    `conclusion ::= ${concluded.map(literal).join(" | ")}`,
     "",
   ].join("\n");
 }
