@@ -62,6 +62,31 @@ export function extraction_prompt(task: ExtractionTask): string {
   ].join("\n");
 }
 
+// ── Grammar ──────────────────────────────────────────────────────────────────
+
+// A llama.cpp GBNF grammar that only lets a model write the reply's shape: facts of the theory's names and relations,
+// then rules whose conditions and conclusion are triples of those names and ?x, ?y or ?z. It cannot check that every
+// variable is filled in, which loading still does.
+export function extraction_grammar(task: ExtractionTask): string {
+  const literal = (word: string) => JSON.stringify(word);
+  const relations = [...new Set([...task.reference.relations.keys(), guard_relation])].sort();
+  const names = [...new Set([...names_of(task.reference), "thing"])].sort();
+  // A small model at temperature 0 can repeat a line until it runs out of tokens, so the counts are bounded:
+  // no more rules than the theory has sentences, and room for several facts per sentence plus each name's guard.
+  const sentences = task.english.split(/[.!?](?:\s|$)/).filter(text => text.trim()).length;
+  return [
+    `root ::= "facts:\\n" fact{0,${sentences * 4 + names.length}} "rules:\\n" rule{1,${sentences}}`,
+    'fact ::= "  - " name " " relation " " name "\\n"',
+    'rule ::= "  - { id: R" [1-9] [0-9]? ", if: [" condition (", " condition)* "], then: " term " " relation " " term " }\\n"',
+    'condition ::= "not "? term " " relation " " term',
+    "term ::= name | variable",
+    'variable ::= "?x" | "?y" | "?z"',
+    `name ::= ${names.map(literal).join(" | ")}`,
+    `relation ::= ${relations.map(literal).join(" | ")}`,
+    "",
+  ].join("\n");
+}
+
 // ── Scoring ──────────────────────────────────────────────────────────────────
 
 // The YAML in a reply: the first fenced block if there is one, else the whole reply.

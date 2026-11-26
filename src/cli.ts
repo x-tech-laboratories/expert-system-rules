@@ -2,12 +2,13 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { explain, infer, query, type Answer } from "./engine.ts";
 import { check_draft, draft_prompt, type DraftRequest } from "./draft.ts";
-import { extraction_prompt, score_extraction, yaml_of, type ExtractionScore, type ExtractionTask } from "./extract.ts";
+import { extraction_grammar, extraction_prompt, score_extraction, yaml_of, type ExtractionScore, type ExtractionTask } from "./extract.ts";
 import { convert_theory, type ProofWriterRecord } from "./importers/proofwriter.ts";
 import { build_prompt, parse_answer, questions_of } from "./prompt.ts";
 import { catalog_problems, find_catalog, parse_vocabulary, is_variable, list_rule_set_files, load_rule_set, parse_rule_set, parse_triple, rule_text, RuleSetError, triple_text, type RuleSet } from "./rule_set.ts";
@@ -36,9 +37,10 @@ const usage = `Usage:
   expert-system-rules prompt <file.yaml>             print the prompt a model is given
   expert-system-rules bench [--runs N] [file.yaml ...] -- <command ...>
                                                      send each rule set's prompt to a command on stdin and score its JSON answer
-  expert-system-rules bench-extract [--every N] [--jobs N] <meta-file.jsonl> -- <command ...>
+  expert-system-rules bench-extract [--every N] [--jobs N] [--grammar] <meta-file.jsonl> -- <command ...>
                                                      give a command every Nth ProofWriter theory's English (default 20), and score
-                                                     the facts and rules it writes by the engine's answers to the theory's questions
+                                                     the facts and rules it writes by the engine's answers to the theory's questions;
+                                                     --grammar also passes --grammar-file <file.gbnf> limiting the reply to the format
   expert-system-rules draft --source <text-file> --id <id> --subject <folder> --cite <credit> [--license <spdx>] [--rounds N] -- <command ...>
                                                      ask a command to draft a rule set from a text, send it back with every problem the
                                                      checks find (up to N rounds, default 3), and write it to rulesets/<folder>/<id>.yaml
@@ -176,12 +178,15 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
   const command = split < 0 ? [] : args.slice(split + 1);
   const every = take_count(split < 0 ? args : args.slice(0, split), "--every", 20);
   const jobs = take_count(every.rest, "--jobs", 1);
-  if (!command.length || every.value === null || jobs.value === null || jobs.rest.length !== 1) {
+  const grammar = jobs.rest.includes("--grammar");
+  const files = jobs.rest.filter(arg => arg !== "--grammar");
+  if (!command.length || every.value === null || jobs.value === null || files.length !== 1) {
     line(context.err, "bench-extract needs a ProofWriter meta file and a command after --; --every and --jobs take whole numbers of 1 or more");
     return 2;
   }
+  const grammar_folder = grammar ? await mkdtemp(join(tmpdir(), "bench-extract-")) : "";
 
-  const lines = (await readFile(resolve(context.cwd, jobs.rest[0]), "utf8")).split("\n").filter(text => text.trim());
+  const lines = (await readFile(resolve(context.cwd, files[0]), "utf8")).split("\n").filter(text => text.trim());
   const tasks: ExtractionTask[] = [];
   for (const [index, text] of lines.entries()) {
     if (index % every.value !== 0) continue;
@@ -201,15 +206,23 @@ async function bench_extract(context: CliContext, args: string[]): Promise<numbe
       const index = next++;
       const task = tasks[index];
       try {
-        scores[index] = score_extraction(task, await ask_model(command, extraction_prompt(task), context.run));
+        let argv = command;
+        if (grammar) {
+          const file = join(grammar_folder, `${task.id}.gbnf`);
+          await writeFile(file, extraction_grammar(task));
+          argv = [...command, "--grammar-file", file];
+        }
+        scores[index] = score_extraction(task, await ask_model(argv, extraction_prompt(task), context.run));
       } catch (error) {
         scores[index] = { id: task.id, correct: 0, total: task.reference.cases.reduce((sum, entry) => sum + questions_of(entry).length, 0), problem: (error as Error).message };
       }
+      // Each theory's score is printed as soon as it is known, so a run cut short still leaves its results.
+      const result = scores[index];
+      line(context.out, `${result.id}: ${result.correct}/${result.total} answers${result.problem ? ` (unusable: ${result.problem})` : ""}`);
     }
   };
   await Promise.all(Array.from({ length: jobs.value }, worker));
 
-  for (const result of scores) line(context.out, `${result.id}: ${result.correct}/${result.total} answers${result.problem ? ` (unusable: ${result.problem})` : ""}`);
   const correct = scores.reduce((sum, result) => sum + result.correct, 0);
   const total = scores.reduce((sum, result) => sum + result.total, 0);
   const perfect = scores.filter(result => result.correct === result.total && !result.problem).length;
