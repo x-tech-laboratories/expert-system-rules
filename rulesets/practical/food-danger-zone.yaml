@@ -1,10 +1,12 @@
 id: food-danger-zone
 title: Food danger zone
 description: >-
-  When food is in the temperature danger zone, which foods are at risk, how
-  long food may stay in the zone, and who is more at risk from food-borne
-  illness.
-version: 1.0.0
+  When food is in the temperature danger zone, which foods are at risk, how long food may stay in
+  the zone, and who is more at risk from food-borne illness. Agencies draw the zone differently,
+  so each food is stored under a standard: the United States' FSIS ("roughly 4 to 60 °C") or the
+  UK and NI ("8 to 63 °C"). Drafted by a model with the draft command, then corrected in review:
+  the zone is scoped by standard, and all four higher-risk groups are covered.
+version: 1.1.0
 license: CC-BY-SA-4.0
 source: "Drafted by a language model from the Wikipedia article \"Danger zone (food safety)\", revision 1386094887 (https://en.wikipedia.org/w/index.php?oldid=1386094887), by Wikipedia contributors, CC BY-SA 4.0."
 method: llm_drafted
@@ -12,19 +14,30 @@ tags: [food-safety, quantities, units, trap-cases]
 vocabularies: [core]
 relations:
   temperature_c: The subject is at this temperature, in degrees Celsius.
+  stored_under: The subject food is judged by this food safety standard.
+  danger_zone_low_c: The subject standard's danger zone starts at this temperature, in degrees Celsius.
+  danger_zone_high_c: The subject standard's danger zone ends at this temperature, in degrees Celsius.
   temperature_zone: The subject's temperature lies in this named zone.
   hours_in_danger_zone: The subject has stayed in the danger zone for this many hours.
   storage_status: Whether the subject is stored in a safe or an unsafe way.
   consumption_advice: Whether the subject should be eaten or not.
-facts: []
+facts:
+  - fsis danger_zone_low_c 4
+  - fsis danger_zone_high_c 60
+  - uk danger_zone_low_c 8
+  - uk danger_zone_high_c 63
 rules:
   - id: R1
     if:
       - "?f temperature_c ?t"
-      - "?t at_least 4"
-      - "?t at_most 63"
+      - "?f stored_under ?s"
+      - "?s danger_zone_low_c ?low"
+      - "?s danger_zone_high_c ?high"
+      - "?t at_least ?low"
+      - "?t at_most ?high"
     then: "?f temperature_zone danger_zone"
-    source: "with the high and low temperatures of the range being 4 to 63 °C (39 to 145 °F)"
+    source: "Food safety agencies define the danger zone differently"
+    note: The limits of each standard are facts, from "define the danger zone as roughly 4 to 60 °C" (FSIS) and "In the UK and NI, the \"Danger Zone\" is defined as 8 to 63 °C".
   - id: R2
     if:
       - "?f is_a potentially_hazardous_food"
@@ -37,6 +50,7 @@ rules:
       - "?h greater_than 2"
     then: "?f consumption_advice do_not_consume"
     source: "food that remains in the danger zone for more than two hours should not be consumed"
+    note: Applies to any food, as the FSIS sentence does; the hours are given, not worked out from temperatures.
   - id: R4
     if:
       - "?f is_a meat"
@@ -52,32 +66,53 @@ rules:
       - "?f is_a cut_produce"
     then: "?f is_a potentially_hazardous_food"
     source: "Cut or peeled fresh produce"
+    note: The article's list of at-risk foods names cut or peeled produce; whole produce is left out on purpose.
   - id: R7
     if:
       - "?p is_a young_child"
     then: "?p has_property higher_risk_from_foodborne_illness"
     source: "Food-borne illness becomes more dangerous in certain populations, such as people with weakened immune systems, young children, the elderly, and pregnant women."
+  - id: R8
+    if:
+      - "?p is_a person_with_weakened_immune_system"
+    then: "?p has_property higher_risk_from_foodborne_illness"
+    source: "Food-borne illness becomes more dangerous in certain populations, such as people with weakened immune systems, young children, the elderly, and pregnant women."
+  - id: R9
+    if:
+      - "?p is_a elderly_person"
+    then: "?p has_property higher_risk_from_foodborne_illness"
+    source: "Food-borne illness becomes more dangerous in certain populations, such as people with weakened immune systems, young children, the elderly, and pregnant women."
+  - id: R10
+    if:
+      - "?p is_a pregnant_woman"
+    then: "?p has_property higher_risk_from_foodborne_illness"
+    source: "Food-borne illness becomes more dangerous in certain populations, such as people with weakened immune systems, young children, the elderly, and pregnant women."
 cases:
   - id: dairy-in-zone
-    note: Dairy is hazardous food, and 20 degrees is inside the zone, so storing it there is unsafe.
+    note: Dairy is hazardous food, and 20 degrees is inside the FSIS zone, so storing it there is unsafe.
     facts:
       - "milk is_a dairy_product"
+      - "milk stored_under fsis"
       - "milk temperature_c 20"
     expect:
       - "milk is_a potentially_hazardous_food"
       - "milk temperature_zone danger_zone"
       - "milk storage_status unsafe_storage"
-  - id: zone-edges
-    note: 4 and 63 are inside the range; 3 and 64 are outside it.
+  - id: fsis-edges
+    note: Under FSIS, 4 and 60 are inside the zone; 3 and 61 are outside it.
     facts:
       - "soup_a is_a potentially_hazardous_food"
+      - "soup_a stored_under fsis"
       - "soup_a temperature_c 4"
       - "soup_b is_a potentially_hazardous_food"
-      - "soup_b temperature_c 63"
+      - "soup_b stored_under fsis"
+      - "soup_b temperature_c 60"
       - "soup_c is_a potentially_hazardous_food"
+      - "soup_c stored_under fsis"
       - "soup_c temperature_c 3"
       - "soup_d is_a potentially_hazardous_food"
-      - "soup_d temperature_c 64"
+      - "soup_d stored_under fsis"
+      - "soup_d temperature_c 61"
     expect:
       - "soup_a temperature_zone danger_zone"
       - "soup_a storage_status unsafe_storage"
@@ -88,6 +123,37 @@ cases:
       - "soup_c storage_status unsafe_storage"
       - "soup_d temperature_zone danger_zone"
       - "soup_d storage_status unsafe_storage"
+  - id: standards-differ
+    note: Trap. The same temperatures fall on different sides of the line under the two standards.
+    facts:
+      - "us_stew is_a meat"
+      - "us_stew stored_under fsis"
+      - "us_stew temperature_c 6"
+      - "uk_stew is_a meat"
+      - "uk_stew stored_under uk"
+      - "uk_stew temperature_c 6"
+      - "us_gravy is_a meat"
+      - "us_gravy stored_under fsis"
+      - "us_gravy temperature_c 62"
+      - "uk_gravy is_a meat"
+      - "uk_gravy stored_under uk"
+      - "uk_gravy temperature_c 62"
+    expect:
+      - "us_stew storage_status unsafe_storage"
+      - "uk_gravy storage_status unsafe_storage"
+    expect_not:
+      - "uk_stew storage_status unsafe_storage"
+      - "us_gravy storage_status unsafe_storage"
+  - id: no-standard
+    note: A temperature alone puts nothing in the zone until the food is judged by a standard.
+    facts:
+      - "cheese is_a dairy_product"
+      - "cheese temperature_c 20"
+    expect:
+      - "cheese is_a potentially_hazardous_food"
+    expect_not:
+      - "cheese temperature_zone danger_zone"
+      - "cheese storage_status unsafe_storage"
   - id: time-threshold
     note: Exactly two hours is not more than two hours; three hours is.
     facts:
@@ -98,9 +164,10 @@ cases:
     expect_not:
       - "chicken_a consumption_advice do_not_consume"
   - id: meat-hot-held
-    note: Meat is hazardous food, but at 70 degrees it is outside the zone, so storage is not flagged.
+    note: Meat is hazardous food, but at 70 degrees it is outside both zones, so storage is not flagged.
     facts:
       - "beef is_a meat"
+      - "beef stored_under uk"
       - "beef temperature_c 70"
     expect:
       - "beef is_a potentially_hazardous_food"
@@ -108,23 +175,41 @@ cases:
       - "beef temperature_zone danger_zone"
       - "beef storage_status unsafe_storage"
   - id: untyped-food-in-zone
-    note: A food not stated to be hazardous in the zone is not flagged as unsafe storage.
+    note: A food not stated to be hazardous may be in the zone without being flagged as unsafe storage.
     facts:
+      - "bread stored_under fsis"
       - "bread temperature_c 20"
     expect:
       - "bread temperature_zone danger_zone"
     expect_not:
       - "bread storage_status unsafe_storage"
-  - id: cut-produce-and-child
-    note: Cut produce is hazardous food; a young child is a higher-risk person.
+  - id: cut-produce
+    note: Cut produce is hazardous food; whole produce is not stated to be.
     facts:
       - "melon_slices is_a cut_produce"
+      - "melon_slices stored_under fsis"
       - "melon_slices temperature_c 10"
-      - "sam is_a young_child"
-      - "pat is_a adult"
+      - "apple is_a produce"
+      - "apple stored_under fsis"
+      - "apple temperature_c 10"
     expect:
       - "melon_slices is_a potentially_hazardous_food"
       - "melon_slices storage_status unsafe_storage"
+    expect_not:
+      - "apple is_a potentially_hazardous_food"
+      - "apple storage_status unsafe_storage"
+  - id: higher-risk-groups
+    note: All four groups the article names are at higher risk; another adult is not.
+    facts:
+      - "sam is_a young_child"
+      - "ann is_a person_with_weakened_immune_system"
+      - "ed is_a elderly_person"
+      - "pia is_a pregnant_woman"
+      - "pat is_a adult"
+    expect:
       - "sam has_property higher_risk_from_foodborne_illness"
+      - "ann has_property higher_risk_from_foodborne_illness"
+      - "ed has_property higher_risk_from_foodborne_illness"
+      - "pia has_property higher_risk_from_foodborne_illness"
     expect_not:
       - "pat has_property higher_risk_from_foodborne_illness"
