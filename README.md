@@ -23,6 +23,7 @@ rules contradict real-world knowledge, and the runner counts where a model and t
 | [Time and order](rulesets/commonsense/time.yaml) | commonsense | 11 | 7 | days of the week, past and future, during, ages, impossible timelines |
 | [ProofWriter sample](rulesets/benchmarks/proofwriter-cwa-d5/) | benchmarks | 50 theories | 50 | generated reasoning puzzles with correct answers, converted from ProofWriter |
 | [Creature licensing](rulesets/fiction/creatures.yaml) | fiction | 17 | 11 | fictional licensing, built to catch real-world priors |
+| [Food danger zone](rulesets/practical/food-danger-zone.yaml) | practical | 10 | 9 | food storage temperatures by standard, time limits, higher-risk groups (model-drafted) |
 | [Car won't start](rulesets/vehicles/car-wont-start.yaml) | vehicles | 16 | 9 | diagnosis |
 
 Facts are triples, `subject relation object`, the same shape as a Wikidata statement, and rules
