@@ -106,3 +106,24 @@ rules nearly every time, and doubles its NatLang score. It is still well behind 
 623/679 and Sonnet 645/679 on NatLang across 49 theories), so it can draft for review but not unattended.
 The next gains would come from feeding the engine's refusal back to the model for a second round, as
 `draft` already does, and from stating the guard rule more plainly in the prompt.
+
+## 2026-11-26: the local 4B model with retries (`bench-extract --grammar --rounds 2`)
+
+The same 50 theories, model and grammar, with the guard explained more plainly in the prompt (a
+fact for every individual, a condition only, never a conclusion) and a refused reply sent back once
+with the engine's reason.
+
+| Theories | Grammar only | Grammar, plainer guard, 2 rounds | Unusable replies | Retried |
+| --- | --- | --- | --- | --- |
+| Depth-5 (379 answers) | 263 (69%) | 265 (70%) | 5 → 5 | 7 of 25 |
+| NatLang (338 answers) | 261 (77%) | 265 (78%) | 2 → 1 | 2 of 25 |
+
+**Small gains; the loops stay.** The unbound-variable refusals are gone: every reply still refused
+after the second round has a conclusion that depends on its own negation. Told the reason, the
+model rewrites the rules but keeps the loop. Among usable replies, 265 of 291 depth-5 answers (91%)
+and 265 of 325 NatLang answers (82%) are right.
+
+**What it shows.** Feedback fixes slips the model can see in one rule, such as a variable left out,
+but not a loop that runs through several rules. The engine could name the rules in the loop,
+not just the facts, so the model knows which rules to change. Even so, a 4B model remains a drafter
+whose output a person reviews.
