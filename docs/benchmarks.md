@@ -57,3 +57,28 @@ into rules that reproduce every answer, and a small one nearly does; the engine'
 remaining slip into a refusal rather than a silent error. Drafting rule sets from clear text with
 review looks workable. Messy, ambiguous text is where the error rate climbs, so drafts from real
 sources need their test cases and a human reviewer. Local models are still to be run.
+
+## 2026-11-26: rules read from English, a local 4B model
+
+The same `bench-extract` test with `Spark-X2.6-4B-Q4_K_M.gguf` (4 billion parameters, 4-bit), run
+through node-llama-cpp on a 4 GB GPU (all 37 layers on the GPU, about 5.9k context, temperature 0),
+one prompt at a time: every 40th depth-5 theory (25) and every 20th NatLang theory (25). The two
+halves took 26 minutes together.
+
+| Theories | Answers | Score | Theories fully right | Replies unusable |
+| --- | --- | --- | --- | --- |
+| Depth-5, generated English | 379 | 251 (66%) | 13/25 | 7 |
+| NatLang, paraphrased English | 338 | 114 (34%) | 4/25 | 16 |
+
+**Most of the loss is format, not reasoning.** An unusable reply scores zero for the whole theory.
+Counting only the replies that loaded, the model got 251 of 274 depth-5 answers (92%) and 114 of 125
+NatLang answers (91%), close to Haiku. The unusable replies broke the format in ways a grammar would
+prevent: YAML that does not parse, triples written in the wrong order (`rough ?x`), whole sentences
+as facts ("kind and round and rough implies young"), rules written as facts, and conditions written
+as field names. NatLang's looser English pushes the small model out of the format far more often.
+
+**What it shows.** A small local model can read rules well enough, but cannot be trusted to keep to
+the format unaided. Constrained output (a JSON schema or a llama.cpp grammar that only allows
+declared relations, the given names and `?variables`) should recover most of the unusable replies,
+and is the next thing to try before using a local model in `draft`. Hosted models remain the choice
+for drafting from messy text.
