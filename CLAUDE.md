@@ -4,8 +4,8 @@
 
 - Follow the [Application Standard](https://x-tech-laboratories.github.io/standards/application/) where it applies to a
   library without a UI: TypeScript on Node 24, vitest with a coverage floor that only rises, oxlint, CI through pull requests.
-- Use [X-Libs](https://github.com/x-tech-laboratories/X-Libs) before writing your own code: check the module table in the
-  X-Libs README first.
+- Use [X-App](https://github.com/x-tech-laboratories/X-App) before writing your own code: check the module table in the
+  X-App README first.
 
 ## This repository
 
